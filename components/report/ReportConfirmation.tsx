@@ -63,7 +63,7 @@ export function ReportConfirmation({
           exit={{ scale: 0.8, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className={`w-full max-w-xs rounded-3xl border-2 bg-white p-6 text-center ${
+          className={`w-full max-w-xs rounded-3xl border-2 bg-surface p-6 text-center ${
             positive ? "border-game-green" : "border-game-red animate-shake"
           }`}
         >

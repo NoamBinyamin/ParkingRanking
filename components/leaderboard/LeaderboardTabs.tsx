@@ -28,7 +28,7 @@ export function LeaderboardTabs({
             key={p.id}
             onClick={() => setPeriod(p.id)}
             className={`flex-1 rounded-xl py-2 text-sm font-display font-semibold transition-colors ${
-              period === p.id ? "bg-white text-game-purple-dark shadow" : "text-ink/50"
+              period === p.id ? "bg-surface text-game-purple-dark shadow" : "text-ink/50"
             }`}
           >
             {p.label}

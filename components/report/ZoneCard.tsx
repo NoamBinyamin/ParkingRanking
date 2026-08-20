@@ -30,7 +30,7 @@ export function ZoneCard({
         "relative flex flex-col items-center gap-2 rounded-3xl border-2 p-4 text-center transition-colors",
         isSelected
           ? "border-game-purple bg-game-purple/10"
-          : "border-ink/10 bg-white hover:border-game-purple/40"
+          : "border-ink/10 bg-surface hover:border-game-purple/40"
       )}
     >
       {isJackpot && (

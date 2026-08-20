@@ -14,6 +14,7 @@
   --color-game-blue: #3ec6ff;
   --color-ink: #241f3d;
   --color-cream: #fff8ec;
+  --color-surface: #ffffff;
 
   --font-display: var(--font-open-sans), "Open Sans", sans-serif;
   --font-body: var(--font-open-sans), "Open Sans", sans-serif;
@@ -73,13 +74,41 @@
   }
 }
 
+/* Same gradient on both html and body, so iOS's overscroll "bounce" past
+   the top/bottom edge reveals more of the same gradient instead of a
+   plain white gap (which only body's background would leave behind).
+   overscroll-behavior removes the bounce entirely for a more native,
+   fullscreen-app feel. */
+html {
+  background: linear-gradient(180deg, #eef3ff 0%, #fdeef7 100%);
+  overscroll-behavior-y: none;
+}
+
 body {
   background: linear-gradient(180deg, #eef3ff 0%, #fdeef7 100%);
   color: var(--color-ink);
   font-family: var(--font-body);
   min-height: 100vh;
+  overscroll-behavior-y: none;
   /* Keeps content clear of the notch/status bar when running fullscreen
      from the home screen (viewportFit: "cover" lets the page draw under
      it in the first place). */
   padding-top: env(safe-area-inset-top);
+}
+
+/* Follows the device's system-wide light/dark setting automatically --
+   no in-app toggle. Overriding these custom properties is enough: every
+   Tailwind utility generated from the @theme tokens above (bg-surface,
+   text-ink, border-ink/10, bg-ink/5, ...) reads from the same variable,
+   so they all repaint correctly without touching each component. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-ink: #f1eefb;
+    --color-surface: #211c36;
+  }
+
+  html,
+  body {
+    background: linear-gradient(180deg, #15111f 0%, #201a33 100%);
+  }
 }

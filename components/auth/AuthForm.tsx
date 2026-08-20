@@ -73,7 +73,7 @@ export function AuthForm() {
               setError(null);
             }}
             className={`flex-1 rounded-xl py-2 text-sm font-display font-semibold transition-colors ${
-              mode === m ? "bg-white text-game-purple-dark shadow" : "text-ink/50"
+              mode === m ? "bg-surface text-game-purple-dark shadow" : "text-ink/50"
             }`}
           >
             {m === "login" ? "התחברות" : "הרשמה"}
@@ -89,7 +89,7 @@ export function AuthForm() {
             onChange={(e) => setUsername(e.target.value)}
             placeholder="רוני_חניון"
             autoComplete="username"
-            className="w-full rounded-2xl border-2 border-ink/10 px-4 py-3 outline-none focus:border-game-purple"
+            className="w-full rounded-2xl border-2 border-ink/10 bg-surface px-4 py-3 text-ink outline-none focus:border-game-purple"
           />
         </div>
         <div>
@@ -101,7 +101,7 @@ export function AuthForm() {
             placeholder="••••••••"
             autoComplete={mode === "login" ? "current-password" : "new-password"}
             dir="ltr"
-            className="w-full rounded-2xl border-2 border-ink/10 px-4 py-3 text-right outline-none focus:border-game-purple"
+            className="w-full rounded-2xl border-2 border-ink/10 bg-surface px-4 py-3 text-right text-ink outline-none focus:border-game-purple"
           />
         </div>
 

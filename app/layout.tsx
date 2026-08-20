@@ -15,9 +15,13 @@ export const metadata: Metadata = {
   // reads these apple-specific tags to launch without browser chrome when
   // added to the home screen. The manifest.ts file still matters for
   // Android/Chrome installability.
+  //
+  // "default" (not "black-translucent") because our light-mode background
+  // is a pale gradient -- translucent would have forced white status-bar
+  // icons over that near-white background, making them unreadable.
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "נקודות חניה",
   },
   // Next only emits the modern "mobile-web-app-capable" tag (Apple added
@@ -32,7 +36,12 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#7c5cff",
+  // Matches the browser chrome / status-bar tint to whichever gradient
+  // is actually showing, in each color scheme.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#eef3ff" },
+    { media: "(prefers-color-scheme: dark)", color: "#15111f" },
+  ],
   // Lets the page draw under the notch/home-indicator area instead of
   // leaving black bars there once running fullscreen from the home screen.
   viewportFit: "cover",

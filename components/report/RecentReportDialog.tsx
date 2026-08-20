@@ -34,7 +34,7 @@ export function RecentReportDialog({
           exit={{ scale: 0.8, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-xs rounded-3xl border-2 border-game-purple bg-white p-6 text-center"
+          className="w-full max-w-xs rounded-3xl border-2 border-game-purple bg-surface p-6 text-center"
         >
           <div className="mb-2 text-4xl">🕒</div>
           <p className="font-display text-lg font-bold text-ink">רגע, כבר דיווחתם!</p>

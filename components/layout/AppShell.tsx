@@ -73,7 +73,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
         className="fixed inset-x-0 bottom-0 z-10 flex justify-center"
         style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
       >
-        <div className="flex gap-2 rounded-full border-2 border-ink/10 bg-white/90 p-2 shadow-lg backdrop-blur">
+        <div className="flex gap-2 rounded-full border-2 border-ink/10 bg-surface/90 p-2 shadow-lg backdrop-blur">
           {TABS.map((tab) => {
             const isActive = pathname?.startsWith(tab.href);
             return (

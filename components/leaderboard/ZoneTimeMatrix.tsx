@@ -85,8 +85,11 @@ export function ZoneTimeMatrix({ zones, stats }: { zones: Zone[]; stats: ZoneTim
                           className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg font-display text-xs font-bold"
                           style={{
                             backgroundColor:
-                              count > 0 ? hexWithAlpha(zone.color, 0.15 + intensity * 0.75) : "rgba(36,31,61,0.04)",
-                            color: intensity > 0.4 ? "white" : "rgba(36,31,61,0.6)",
+                              count > 0
+                                ? hexWithAlpha(zone.color, 0.15 + intensity * 0.75)
+                                : "color-mix(in srgb, var(--color-ink) 4%, transparent)",
+                            color:
+                              intensity > 0.4 ? "white" : "color-mix(in srgb, var(--color-ink) 60%, transparent)",
                           }}
                         >
                           {count > 0 ? count : ""}

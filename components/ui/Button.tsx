@@ -8,9 +8,11 @@ type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
 
 const VARIANT_STYLES: Record<ButtonVariant, string> = {
   primary: "bg-game-purple text-white border-game-purple-dark shadow-[0_6px_0_0_var(--color-game-purple-dark)]",
-  secondary: "bg-game-yellow text-ink border-game-yellow-dark shadow-[0_6px_0_0_var(--color-game-yellow-dark)]",
+  // Fixed dark text (not text-ink) -- this sits on a bright yellow
+  // background regardless of theme, so it must never flip to light text.
+  secondary: "bg-game-yellow text-[#241f3d] border-game-yellow-dark shadow-[0_6px_0_0_var(--color-game-yellow-dark)]",
   danger: "bg-game-red text-white border-game-red-dark shadow-[0_6px_0_0_var(--color-game-red-dark)]",
-  ghost: "bg-white text-ink border-ink/10 shadow-[0_6px_0_0_rgba(36,31,61,0.08)]",
+  ghost: "bg-surface text-ink border-ink/10 shadow-[0_6px_0_0_rgba(0,0,0,0.1)]",
 };
 
 export function Button({
