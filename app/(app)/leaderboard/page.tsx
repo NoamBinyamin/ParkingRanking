@@ -2,7 +2,6 @@ import { createSupabaseServerClient, getCurrentUser } from "@/lib/supabase/serve
 import { getLeaderboard, getZoneTimeStats } from "@/lib/services/leaderboard";
 import { getMyProfile } from "@/lib/services/profile";
 import { getActiveZones } from "@/lib/services/zones";
-import { getGhostComparison } from "@/lib/utils/ghost";
 import { LeaderboardScreen } from "@/components/leaderboard/LeaderboardScreen";
 
 export default async function LeaderboardPage() {
@@ -18,17 +17,13 @@ export default async function LeaderboardPage() {
     user ? getMyProfile(supabase, user.id) : Promise.resolve(null),
   ]);
 
-  const ghostComparison = getGhostComparison(month, user?.id ?? null);
-
   return (
     <LeaderboardScreen
-      leaderboards={{ week, month, all }}
-      zones={zones}
-      zoneTimeStats={zoneTimeStats}
-      ghostComparison={ghostComparison}
-      currentUserId={user?.id ?? null}
-      totalScore={profile?.total_score ?? 0}
-      currentStreak={profile?.current_streak ?? 0}
+      userId={user?.id ?? null}
+      initialLeaderboards={{ week, month, all }}
+      initialZones={zones}
+      initialZoneTimeStats={zoneTimeStats}
+      initialProfile={profile}
     />
   );
 }

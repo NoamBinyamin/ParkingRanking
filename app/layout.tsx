@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Open_Sans } from "next/font/google";
+import { SWRProvider } from "@/components/providers/SWRProvider";
 import "./globals.css";
 
 const openSans = Open_Sans({
@@ -54,7 +55,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="he" dir="rtl" className={`${openSans.variable} h-full`}>
-      <body className="min-h-full antialiased">{children}</body>
+      <body className="min-h-full antialiased">
+        <SWRProvider>{children}</SWRProvider>
+      </body>
     </html>
   );
 }

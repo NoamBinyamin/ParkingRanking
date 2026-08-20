@@ -19,10 +19,11 @@ export default async function ProfilePage() {
 
   return (
     <ProfileScreen
-      profile={profile}
-      achievements={achievements}
-      progress={progress}
-      recentReports={recentReports}
+      userId={user.id}
+      initialProfile={profile}
+      initialAchievements={achievements}
+      initialProgress={progress}
+      initialRecentReports={recentReports}
     />
   );
 }

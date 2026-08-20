@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import type { Profile } from "@/lib/types/database";
-import { useUserStore } from "@/lib/stores/useUserStore";
+import { useProfile } from "@/lib/hooks/useProfile";
 import { signOut } from "@/lib/services/auth";
 
 const MotionLink = motion.create(Link);
@@ -17,19 +16,13 @@ const TABS = [
   { href: "/profile", label: "פרופיל", icon: "👤" },
 ];
 
-export function AppShell({ profile, children }: { profile: Profile; children: ReactNode }) {
-  const setProfile = useUserStore((s) => s.setProfile);
-  const storeProfile = useUserStore((s) => s.profile);
+export function AppShell({ profile: initialProfile, children }: { profile: Profile; children: ReactNode }) {
+  // Shares the same SWR cache entry every screen reads/writes (optimistic
+  // score bumps from Report, revalidation elsewhere), so the header stays
+  // in sync with whatever the rest of the app just did.
+  const { data: activeProfile = initialProfile } = useProfile(initialProfile.id, initialProfile);
   const pathname = usePathname();
   const router = useRouter();
-
-  // Hydrate the client store from the server-fetched profile on every
-  // navigation, so the score pill stays correct even after a refresh.
-  useEffect(() => {
-    setProfile(profile);
-  }, [profile, setProfile]);
-
-  const activeProfile = storeProfile ?? profile;
 
   async function handleSignOut() {
     await signOut();

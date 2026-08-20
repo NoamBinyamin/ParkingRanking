@@ -11,13 +11,34 @@ import { PoopRain } from "@/components/report/PoopRain";
 import { RecentReportDialog } from "@/components/report/RecentReportDialog";
 import { WelcomeSplash } from "@/components/onboarding/WelcomeSplash";
 import { Button } from "@/components/ui/Button";
-import { useUserStore } from "@/lib/stores/useUserStore";
+import { useCurrentUserId } from "@/lib/hooks/useCurrentUser";
+import { useZones } from "@/lib/hooks/useZones";
+import { useZoneTimeStats } from "@/lib/hooks/useLeaderboard";
+import { useOptimisticScore } from "@/lib/hooks/useProfile";
+import { useRevalidateAfterReport } from "@/lib/hooks/useRevalidateAfterReport";
 import { submitParkingReport, replaceLastReport } from "@/app/(app)/report/actions";
 
 const GAG_ZONE_SLUG = "sachla";
 const ONBOARDING_STORAGE_KEY = "parkpoints_onboarding_seen";
 
-export function ReportScreen({ zones, zoneTimeStats }: { zones: Zone[]; zoneTimeStats: ZoneTimeStat[] }) {
+export function ReportScreen({
+  userId,
+  initialZones,
+  initialZoneTimeStats,
+}: {
+  userId: string;
+  initialZones: Zone[];
+  initialZoneTimeStats: ZoneTimeStat[];
+}) {
+  // fallbackData means first paint is instant (server-fetched), then SWR
+  // takes over: cached instantly on return visits, revalidated quietly in
+  // the background so it never sits stale for long either.
+  const currentUserId = useCurrentUserId(userId);
+  const { data: zones = [] } = useZones(initialZones);
+  const { data: zoneTimeStats = [] } = useZoneTimeStats(initialZoneTimeStats);
+  const addPoints = useOptimisticScore(currentUserId);
+  const revalidateAfterReport = useRevalidateAfterReport();
+
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedZone, setConfirmedZone] = useState<Zone | null>(null);
@@ -25,7 +46,6 @@ export function ReportScreen({ zones, zoneTimeStats }: { zones: Zone[]; zoneTime
   const [showPoopRain, setShowPoopRain] = useState(false);
   const [tooSoon, setTooSoon] = useState<{ lastReport: ReportWithZone; minutesRemaining: number } | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const addPoints = useUserStore((s) => s.addPoints);
 
   useEffect(() => {
     if (!localStorage.getItem(ONBOARDING_STORAGE_KEY)) {
@@ -58,6 +78,7 @@ export function ReportScreen({ zones, zoneTimeStats }: { zones: Zone[]; zoneTime
         return;
       }
       addPoints(selectedZone.point_value);
+      revalidateAfterReport();
       setNewlyUnlocked(result.newlyUnlocked);
       finishReport(selectedZone);
     } catch (err) {
@@ -73,6 +94,7 @@ export function ReportScreen({ zones, zoneTimeStats }: { zones: Zone[]; zoneTime
     try {
       await replaceLastReport(selectedZone.id);
       addPoints(selectedZone.point_value - tooSoon.lastReport.points_awarded);
+      revalidateAfterReport();
       setNewlyUnlocked([]);
       setTooSoon(null);
       finishReport(selectedZone);

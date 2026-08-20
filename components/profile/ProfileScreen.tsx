@@ -1,21 +1,35 @@
+"use client";
+
 import type { Profile, ReportWithZone, UserAchievement } from "@/lib/types/database";
 import type { AchievementProgress } from "@/lib/achievements";
 import { AchievementsGrid } from "@/components/achievements/AchievementsGrid";
 import { RecentReportsList } from "@/components/profile/RecentReportsList";
 import { Card } from "@/components/ui/Card";
 import { formatJoinDate } from "@/lib/utils/time";
+import { useCurrentUserId } from "@/lib/hooks/useCurrentUser";
+import { useProfile } from "@/lib/hooks/useProfile";
+import { useMyAchievements, useMyProgress } from "@/lib/hooks/useAchievements";
+import { useRecentReports } from "@/lib/hooks/useReports";
 
 export function ProfileScreen({
-  profile,
-  achievements,
-  progress,
-  recentReports,
+  userId,
+  initialProfile,
+  initialAchievements,
+  initialProgress,
+  initialRecentReports,
 }: {
-  profile: Profile;
-  achievements: UserAchievement[];
-  progress: AchievementProgress;
-  recentReports: ReportWithZone[];
+  userId: string;
+  initialProfile: Profile;
+  initialAchievements: UserAchievement[];
+  initialProgress: AchievementProgress;
+  initialRecentReports: ReportWithZone[];
 }) {
+  const currentUserId = useCurrentUserId(userId);
+  const { data: profile = initialProfile } = useProfile(currentUserId, initialProfile);
+  const { data: achievements = [] } = useMyAchievements(currentUserId, initialAchievements);
+  const { data: progress = initialProgress } = useMyProgress(currentUserId, initialProgress);
+  const { data: recentReports = [] } = useRecentReports(currentUserId, 10, initialRecentReports);
+
   return (
     <div className="space-y-6 pb-6 pt-2">
       <div className="text-center">

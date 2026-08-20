@@ -1,27 +1,39 @@
-import type { LeaderboardEntry, LeaderboardPeriod, Zone, ZoneTimeStat } from "@/lib/types/database";
-import type { GhostComparison } from "@/lib/utils/ghost";
+"use client";
+
+import type { LeaderboardEntry, LeaderboardPeriod, Profile, Zone, ZoneTimeStat } from "@/lib/types/database";
 import { LeaderboardTabs } from "@/components/leaderboard/LeaderboardTabs";
 import { ZoneTimeMatrix } from "@/components/leaderboard/ZoneTimeMatrix";
 import { GhostComparisonCard } from "@/components/leaderboard/GhostComparisonCard";
 import { Card } from "@/components/ui/Card";
+import { useCurrentUserId } from "@/lib/hooks/useCurrentUser";
+import { useZones } from "@/lib/hooks/useZones";
+import { useLeaderboard, useZoneTimeStats } from "@/lib/hooks/useLeaderboard";
+import { useProfile } from "@/lib/hooks/useProfile";
+import { getGhostComparison } from "@/lib/utils/ghost";
 
 export function LeaderboardScreen({
-  leaderboards,
-  zones,
-  zoneTimeStats,
-  ghostComparison,
-  currentUserId,
-  totalScore,
-  currentStreak,
+  userId,
+  initialLeaderboards,
+  initialZones,
+  initialZoneTimeStats,
+  initialProfile,
 }: {
-  leaderboards: Record<LeaderboardPeriod, LeaderboardEntry[]>;
-  zones: Zone[];
-  zoneTimeStats: ZoneTimeStat[];
-  ghostComparison: GhostComparison;
-  currentUserId: string | null;
-  totalScore: number;
-  currentStreak: number;
+  userId: string | null;
+  initialLeaderboards: Record<LeaderboardPeriod, LeaderboardEntry[]>;
+  initialZones: Zone[];
+  initialZoneTimeStats: ZoneTimeStat[];
+  initialProfile: Profile | null;
 }) {
+  const currentUserId = useCurrentUserId(userId);
+  const { data: week = [] } = useLeaderboard("week", initialLeaderboards.week);
+  const { data: month = [] } = useLeaderboard("month", initialLeaderboards.month);
+  const { data: all = [] } = useLeaderboard("all", initialLeaderboards.all);
+  const { data: zones = [] } = useZones(initialZones);
+  const { data: zoneTimeStats = [] } = useZoneTimeStats(initialZoneTimeStats);
+  const { data: profile } = useProfile(currentUserId, initialProfile);
+
+  const ghostComparison = getGhostComparison(month, currentUserId);
+
   return (
     <div className="space-y-6 pb-6 pt-2">
       <div className="text-center">
@@ -32,12 +44,14 @@ export function LeaderboardScreen({
       <Card className="flex items-center justify-between border-game-purple-dark bg-game-purple text-white">
         <div>
           <p className="text-sm text-white/70">הניקוד שלך</p>
-          <p className="font-display text-3xl font-extrabold">{totalScore} נק&apos;</p>
+          <p className="font-display text-3xl font-extrabold">{profile?.total_score ?? 0} נק&apos;</p>
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className="text-4xl">🚗</span>
-          {currentStreak > 0 && (
-            <span className="font-display text-xs font-bold text-white/80">🔥 רצף של {currentStreak}</span>
+          {(profile?.current_streak ?? 0) > 0 && (
+            <span className="font-display text-xs font-bold text-white/80">
+              🔥 רצף של {profile?.current_streak}
+            </span>
           )}
         </div>
       </Card>
@@ -46,7 +60,7 @@ export function LeaderboardScreen({
 
       <div>
         <h2 className="mb-3 font-display text-lg font-bold text-ink">החניינים המובילים</h2>
-        <LeaderboardTabs leaderboards={leaderboards} currentUserId={currentUserId} />
+        <LeaderboardTabs leaderboards={{ week, month, all }} currentUserId={currentUserId} />
       </div>
 
       <div>
