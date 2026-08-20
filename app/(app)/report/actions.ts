@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import webpush from "web-push";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createReport, getRecentReports } from "@/lib/services/reports";
+import { createReport, getLastReportOfType } from "@/lib/services/reports";
 import { getMyAchievements } from "@/lib/services/achievements";
 import { getMyProfile } from "@/lib/services/profile";
 import { ACHIEVEMENTS } from "@/lib/achievements";
@@ -74,16 +74,19 @@ export async function submitParkingReport(zoneId: string, reportType: ReportType
   const { data } = await supabase.auth.getUser();
   if (!data.user) throw new Error("משתמש לא מחובר");
 
-  const [lastReport] = await getRecentReports(supabase, data.user.id, 1);
-
-  if (lastReport) {
-    const minutesSince = (Date.now() - new Date(lastReport.created_at).getTime()) / 60000;
-    if (minutesSince < MIN_REPORT_INTERVAL_MINUTES) {
-      return {
-        status: "too-soon" as const,
-        lastReport,
-        minutesRemaining: Math.max(1, Math.ceil(MIN_REPORT_INTERVAL_MINUTES - minutesSince)),
-      };
+  // The cooldown only applies to "parked" reports -- "saw" (spot-sighting)
+  // reports are unlimited, so they're never checked against it here.
+  if (reportType === "parked") {
+    const lastParkedReport = await getLastReportOfType(supabase, data.user.id, "parked");
+    if (lastParkedReport) {
+      const minutesSince = (Date.now() - new Date(lastParkedReport.created_at).getTime()) / 60000;
+      if (minutesSince < MIN_REPORT_INTERVAL_MINUTES) {
+        return {
+          status: "too-soon" as const,
+          lastReport: lastParkedReport,
+          minutesRemaining: Math.max(1, Math.ceil(MIN_REPORT_INTERVAL_MINUTES - minutesSince)),
+        };
+      }
     }
   }
 

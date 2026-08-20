@@ -505,9 +505,11 @@ declare
   new_points integer;
   updated_report public.reports;
 begin
+  -- The cooldown (and thus this replace flow) only ever applies to
+  -- 'parked' reports -- 'saw' reports have no cooldown to replace.
   select * into last_report
   from public.reports
-  where user_id = auth.uid()
+  where user_id = auth.uid() and report_type = 'parked'
   order by created_at desc
   limit 1;
 
@@ -515,15 +517,9 @@ begin
     raise exception 'No recent report within the cooldown window to replace';
   end if;
 
-  -- Replacing only ever changes the zone, never the report_type -- a
-  -- 'saw' report keeps its flat bonus regardless of the new zone.
-  if last_report.report_type = 'saw' then
-    new_points := 2;
-  else
-    select point_value into new_points from public.zones where id = new_zone_id;
-    if new_points is null then
-      raise exception 'Unknown zone';
-    end if;
+  select point_value into new_points from public.zones where id = new_zone_id;
+  if new_points is null then
+    raise exception 'Unknown zone';
   end if;
 
   update public.profiles

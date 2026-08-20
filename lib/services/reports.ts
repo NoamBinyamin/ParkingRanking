@@ -33,3 +33,21 @@ export async function getRecentReports(
   if (error) throw error;
   return data as unknown as ReportWithZone[];
 }
+
+export async function getLastReportOfType(
+  supabase: SupabaseClient,
+  userId: string,
+  reportType: ReportType
+): Promise<ReportWithZone | null> {
+  const { data, error } = await supabase
+    .from("reports")
+    .select("*, zone:zones(name, icon, color)")
+    .eq("user_id", userId)
+    .eq("report_type", reportType)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data as unknown as ReportWithZone | null;
+}
