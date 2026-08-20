@@ -41,6 +41,7 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
   const pathname = usePathname();
   const router = useRouter();
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const mainRef = useRef<HTMLElement | null>(null);
 
   const currentIndex = TABS.findIndex((t) => pathname?.startsWith(t.href));
 
@@ -62,20 +63,23 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
   // "going crazy". Landing every navigation at the top avoids that, and
   // matches what switching tabs should feel like anyway.
   useEffect(() => {
-    window.scrollTo({ top: 0 });
+    mainRef.current?.scrollTo({ top: 0 });
   }, [pathname]);
 
   // A vertical scroll gesture can still register a touchend with enough
   // horizontal wobble to look like a swipe. Any real scroll event firing
   // between touchstart and touchend means this was a scroll, full stop --
-  // more reliable than delta math alone.
+  // more reliable than delta math alone. Scrolling happens inside `main`
+  // now (it's the scroll container, not the window), so this listens there.
   const scrolledDuringTouch = useRef(false);
   useEffect(() => {
+    const node = mainRef.current;
+    if (!node) return;
     function onScroll() {
       scrolledDuringTouch.current = true;
     }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    node.addEventListener("scroll", onScroll, { passive: true });
+    return () => node.removeEventListener("scroll", onScroll);
   }, []);
 
   function handleTouchStart(e: TouchEvent) {
@@ -124,13 +128,10 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
   }, [liveToast]);
 
   return (
-    <div
-      className="flex min-h-screen flex-col"
-      style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
-    >
+    <div className="flex h-dvh flex-col overflow-hidden">
       <LiveReportToast toast={liveToast} />
 
-      <header className="flex items-center justify-between px-5 py-4">
+      <header className="flex shrink-0 items-center justify-between px-5 py-3">
         <Link href="/profile" className="flex items-center gap-2">
           <span className="text-2xl">{activeProfile.avatar_emoji}</span>
           <div className="text-start">
@@ -156,7 +157,9 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
       </header>
 
       <main
-        className="flex flex-1 flex-col overflow-x-hidden px-5"
+        ref={mainRef}
+        className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain px-5"
+        style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >

@@ -14,7 +14,7 @@ export function ZoneGrid({
   displayPoints?: number;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-3 gap-1.5">
       {zones.map((zone) => (
         <ZoneCard
           key={zone.id}

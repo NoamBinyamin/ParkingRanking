@@ -113,8 +113,8 @@ export function ReportScreen() {
   }
 
   return (
-    <div className="flex flex-1 flex-col pb-2 pt-1">
-      <div className="relative mb-2 text-center">
+    <div className="flex flex-1 flex-col pb-2">
+      <div className="relative mb-1 text-center">
         <button
           onClick={() => setShowOnboarding(true)}
           aria-label="איך משחקים"
@@ -133,7 +133,7 @@ export function ReportScreen() {
         onChangeCount={setSpotCount}
       />
 
-      <div className="mb-3">
+      <div className="mb-2.5">
         <RightNowCard zones={zones} stats={zoneTimeStats} />
       </div>
 
@@ -144,7 +144,7 @@ export function ReportScreen() {
         displayPoints={reportType === "saw" ? SAW_BONUS_POINTS : undefined}
       />
 
-      <div className="mt-auto pt-4">
+      <div className="mt-auto pt-3">
         <Button
           variant="primary"
           className="w-full py-4 text-lg shadow-[0_8px_0_0_var(--color-game-purple-dark)]"

@@ -37,7 +37,7 @@ export function RightNowCard({ zones, stats }: { zones: Zone[]; stats: ZoneTimeS
   const hasData = Boolean(top && top.count > 0);
 
   return (
-    <Card className="relative overflow-hidden border-game-yellow-dark bg-game-yellow/20 p-3">
+    <Card className="relative overflow-hidden border-game-yellow-dark bg-game-yellow/20 p-2">
       <div className="flex items-center gap-3">
         <motion.span
           className="text-2xl"

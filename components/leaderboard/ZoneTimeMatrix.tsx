@@ -57,7 +57,11 @@ export function ZoneTimeMatrix({ zones, stats }: { zones: Zone[]; stats: ZoneTim
           אין עדיין מספיק דיווחים על {zone.name} כדי לזהות דפוסים 📊
         </p>
       ) : (
-        <div className="overflow-x-auto">
+        <div
+          className="overflow-x-auto"
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+        >
           <table className="w-full min-w-[460px] text-sm">
             <thead>
               <tr>

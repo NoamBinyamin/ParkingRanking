@@ -30,7 +30,7 @@ export function ZoneCard({
       transition={{ type: "spring", stiffness: 400, damping: 20 }}
       style={isSelected ? { boxShadow: `0 0 0 4px ${zone.color}33` } : undefined}
       className={cn(
-        "relative flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-center transition-colors",
+        "relative flex flex-col items-center gap-0.5 rounded-2xl border-2 p-1.5 text-center transition-colors",
         isSelected
           ? "border-game-purple bg-game-purple/10"
           : "border-ink/10 bg-surface hover:border-game-purple/40"
