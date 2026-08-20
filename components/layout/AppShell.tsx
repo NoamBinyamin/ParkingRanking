@@ -1,0 +1,88 @@
+"use client";
+
+import { useEffect } from "react";
+import type { ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import type { Profile } from "@/lib/types/database";
+import { useUserStore } from "@/lib/stores/useUserStore";
+import { signOut } from "@/lib/services/auth";
+
+const TABS = [
+  { href: "/report", label: "חניה", icon: "🅿️" },
+  { href: "/leaderboard", label: "דירוג", icon: "🏆" },
+  { href: "/profile", label: "פרופיל", icon: "👤" },
+];
+
+export function AppShell({ profile, children }: { profile: Profile; children: ReactNode }) {
+  const setProfile = useUserStore((s) => s.setProfile);
+  const storeProfile = useUserStore((s) => s.profile);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // Hydrate the client store from the server-fetched profile on every
+  // navigation, so the score pill stays correct even after a refresh.
+  useEffect(() => {
+    setProfile(profile);
+  }, [profile, setProfile]);
+
+  const activeProfile = storeProfile ?? profile;
+
+  async function handleSignOut() {
+    await signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col pb-28">
+      <header className="flex items-center justify-between px-5 py-4">
+        <button onClick={() => router.push("/profile")} className="flex items-center gap-2">
+          <span className="text-2xl">{activeProfile.avatar_emoji}</span>
+          <div className="text-start">
+            <p className="font-display text-sm font-semibold text-ink/70">
+              {activeProfile.username}
+            </p>
+            <p className="font-display text-lg font-bold text-game-purple-dark">
+              {activeProfile.total_score} נק&apos;
+            </p>
+          </div>
+          {activeProfile.current_streak > 0 && (
+            <span className="flex items-center gap-1 rounded-full bg-game-yellow/20 px-2 py-1 font-display text-xs font-bold text-game-yellow-dark">
+              🔥 {activeProfile.current_streak}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={handleSignOut}
+          className="text-sm font-semibold text-ink/40 hover:text-game-red-dark"
+        >
+          התנתקות
+        </button>
+      </header>
+
+      <main className="flex-1 px-5">{children}</main>
+
+      <nav className="fixed inset-x-0 bottom-0 z-10 flex justify-center pb-4">
+        <div className="flex gap-2 rounded-full border-2 border-ink/10 bg-white/90 p-2 shadow-lg backdrop-blur">
+          {TABS.map((tab) => {
+            const isActive = pathname?.startsWith(tab.href);
+            return (
+              <motion.button
+                key={tab.href}
+                onClick={() => router.push(tab.href)}
+                whileTap={{ scale: 0.9 }}
+                className={`flex items-center gap-2 rounded-full px-5 py-3 font-display text-sm font-semibold transition-colors ${
+                  isActive ? "bg-game-purple text-white" : "text-ink/50"
+                }`}
+              >
+                <span className="text-lg">{tab.icon}</span>
+                {tab.label}
+              </motion.button>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+}

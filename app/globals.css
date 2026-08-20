@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-game-purple: #7c5cff;
+  --color-game-purple-dark: #5b3df0;
+  --color-game-pink: #ff5da2;
+  --color-game-pink-dark: #e0428c;
+  --color-game-yellow: #ffc93c;
+  --color-game-yellow-dark: #f0a500;
+  --color-game-green: #33d17a;
+  --color-game-green-dark: #1fa25c;
+  --color-game-red: #ff5a5f;
+  --color-game-red-dark: #d93b40;
+  --color-game-blue: #3ec6ff;
+  --color-ink: #241f3d;
+  --color-cream: #fff8ec;
+
+  --font-display: var(--font-open-sans), "Open Sans", sans-serif;
+  --font-body: var(--font-open-sans), "Open Sans", sans-serif;
+
+  --animate-pop-in: pop-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-wiggle: wiggle 0.6s ease-in-out;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-shake: shake 0.4s ease-in-out;
+
+  @keyframes pop-in {
+    0% {
+      transform: scale(0.4) translateY(20px);
+      opacity: 0;
+    }
+    70% {
+      transform: scale(1.08) translateY(-2px);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1) translateY(0);
+    }
+  }
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-3deg);
+    }
+    75% {
+      transform: rotate(3deg);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20%,
+    60% {
+      transform: translateX(-6px);
+    }
+    40%,
+    80% {
+      transform: translateX(6px);
+    }
+  }
+}
+
+body {
+  background: linear-gradient(180deg, #eef3ff 0%, #fdeef7 100%);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
