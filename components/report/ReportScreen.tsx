@@ -144,7 +144,7 @@ export function ReportScreen() {
         displayPoints={reportType === "saw" ? SAW_BONUS_POINTS : undefined}
       />
 
-      <div className="sticky bottom-24 mt-auto pt-4">
+      <div className="mt-auto pt-4">
         <Button
           variant="primary"
           className="w-full py-4 text-lg shadow-[0_8px_0_0_var(--color-game-purple-dark)]"
