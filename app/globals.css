@@ -82,6 +82,10 @@
 html {
   background: linear-gradient(180deg, #eef3ff 0%, #fdeef7 100%);
   overscroll-behavior-y: none;
+  /* Defensive: a scale() pulse/pop animation on a full-width element can
+     visually exceed the viewport by a couple of px at its peak, which
+     would otherwise register as horizontal scroll on mobile. */
+  overflow-x: hidden;
 }
 
 body {
@@ -90,6 +94,7 @@ body {
   font-family: var(--font-body);
   min-height: 100vh;
   overscroll-behavior-y: none;
+  overflow-x: hidden;
   /* Keeps content clear of the notch/status bar when running fullscreen
      from the home screen (viewportFit: "cover" lets the page draw under
      it in the first place). */

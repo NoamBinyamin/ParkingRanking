@@ -106,32 +106,33 @@ export function ReportScreen({
   }
 
   return (
-    <div className="pb-6 pt-2">
-      <div className="relative mb-4 text-center">
+    <div className="flex flex-1 flex-col pb-2 pt-1">
+      <div className="relative mb-2 text-center">
         <button
           onClick={() => setShowOnboarding(true)}
           aria-label="איך משחקים"
-          className="absolute end-0 top-0 flex h-8 w-8 items-center justify-center rounded-full bg-ink/5 text-lg text-ink/50 hover:bg-ink/10"
+          className="absolute end-0 top-0 flex h-7 w-7 items-center justify-center rounded-full bg-ink/5 text-base text-ink/50 hover:bg-ink/10"
         >
           ℹ️
         </button>
-        <h1 className="font-display text-2xl font-bold text-ink">איפה חנית?</h1>
-        <p className="text-sm text-ink/50">בחרו אזור ונעלו את הניקוד</p>
+        <h1 className="font-display text-xl font-bold text-ink">איפה חנית?</h1>
+        <p className="text-xs text-ink/50">בחרו אזור ונעלו את הניקוד</p>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-3">
         <RightNowCard zones={zones} stats={zoneTimeStats} />
       </div>
 
       <ZoneGrid zones={zones} selectedZoneId={selectedZoneId} onSelect={setSelectedZoneId} />
 
-      <div className="sticky bottom-24 mt-6">
+      <div className="sticky bottom-24 mt-auto pt-4">
         <Button
           variant="primary"
-          className="w-full"
+          className="w-full py-4 text-lg shadow-[0_8px_0_0_var(--color-game-purple-dark)]"
           disabled={!selectedZone}
           isLoading={isSubmitting}
           loadingContent={<CarDrivingIndicator />}
+          pulse={Boolean(selectedZone)}
           onClick={handleSubmit}
         >
           {selectedZone ? `דיווח על ${selectedZone.name} 🚀` : "בחרו אזור"}

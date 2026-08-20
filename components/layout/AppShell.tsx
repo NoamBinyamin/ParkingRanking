@@ -60,7 +60,7 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
         </button>
       </header>
 
-      <main className="flex-1 px-5">{children}</main>
+      <main className="flex flex-1 flex-col px-5">{children}</main>
 
       <nav
         className="fixed inset-x-0 bottom-0 z-10 flex justify-center"

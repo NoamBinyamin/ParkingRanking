@@ -11,7 +11,7 @@ export function ZoneGrid({
   onSelect: (zoneId: string) => void;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-3 gap-2">
       {zones.map((zone) => (
         <ZoneCard
           key={zone.id}

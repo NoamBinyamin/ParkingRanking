@@ -37,10 +37,10 @@ export function RightNowCard({ zones, stats }: { zones: Zone[]; stats: ZoneTimeS
   const hasData = Boolean(top && top.count > 0);
 
   return (
-    <Card className="relative overflow-hidden border-game-yellow-dark bg-game-yellow/20">
+    <Card className="relative overflow-hidden border-game-yellow-dark bg-game-yellow/20 p-3">
       <div className="flex items-center gap-3">
         <motion.span
-          className="text-3xl"
+          className="text-2xl"
           animate={{ x: ["-10%", "10%", "-10%"] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           aria-hidden
@@ -53,7 +53,7 @@ export function RightNowCard({ zones, stats }: { zones: Zone[]; stats: ZoneTimeS
           </p>
           {hasData && top ? (
             <>
-              <p className="font-display text-lg font-bold text-ink">
+              <p className="font-display text-base font-bold text-ink">
                 כדאי לנסות: {top.zone.icon} {top.zone.name}
               </p>
               <p className="text-xs text-ink/50">

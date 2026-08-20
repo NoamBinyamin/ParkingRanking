@@ -27,19 +27,19 @@ export function ZoneCard({
       transition={{ type: "spring", stiffness: 400, damping: 20 }}
       style={isSelected ? { boxShadow: `0 0 0 4px ${zone.color}33` } : undefined}
       className={cn(
-        "relative flex flex-col items-center gap-2 rounded-3xl border-2 p-4 text-center transition-colors",
+        "relative flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-center transition-colors",
         isSelected
           ? "border-game-purple bg-game-purple/10"
           : "border-ink/10 bg-surface hover:border-game-purple/40"
       )}
     >
       {isJackpot && (
-        <span className="absolute -top-2 end-2 animate-wiggle text-lg" aria-hidden>
+        <span className="absolute -top-1.5 end-1.5 animate-wiggle text-base" aria-hidden>
           ✨
         </span>
       )}
-      <span className="text-3xl">{zone.icon}</span>
-      <span className="font-display text-sm font-semibold leading-tight text-ink">{zone.name}</span>
+      <span className="text-2xl">{zone.icon}</span>
+      <span className="font-display text-xs font-semibold leading-tight text-ink">{zone.name}</span>
       <PointsBadge value={zone.point_value} size="sm" />
     </motion.button>
   );
