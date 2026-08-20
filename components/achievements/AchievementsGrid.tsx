@@ -23,7 +23,7 @@ export function AchievementsGrid({
           <div
             key={achievement.id}
             className={cn(
-              "flex flex-col gap-1 rounded-2xl border-2 p-3",
+              "flex flex-col gap-1 rounded-2xl border p-3",
               isUnlocked ? "border-game-yellow-dark bg-game-yellow/15" : "border-ink/10 bg-ink/5"
             )}
           >

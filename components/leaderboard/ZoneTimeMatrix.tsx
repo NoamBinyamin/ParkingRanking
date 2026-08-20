@@ -40,7 +40,7 @@ export function ZoneTimeMatrix({ zones, stats }: { zones: Zone[]; stats: ZoneTim
             key={z.id}
             onClick={() => setSelectedZoneId(z.id)}
             className={cn(
-              "flex items-center gap-1 rounded-full border-2 px-3 py-1.5 text-sm font-display font-semibold transition-colors",
+              "flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-display font-semibold transition-colors",
               z.id === zone.id
                 ? "border-game-purple bg-game-purple/10 text-game-purple-dark"
                 : "border-ink/10 text-ink/50"

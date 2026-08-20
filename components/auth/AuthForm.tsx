@@ -89,7 +89,7 @@ export function AuthForm() {
             onChange={(e) => setUsername(e.target.value)}
             placeholder="רוני_חניון"
             autoComplete="username"
-            className="w-full rounded-2xl border-2 border-ink/10 bg-surface px-4 py-3 text-ink outline-none focus:border-game-purple"
+            className="w-full rounded-2xl border border-ink/10 bg-surface px-4 py-3 text-ink outline-none transition-shadow focus:border-game-purple focus:ring-2 focus:ring-game-purple/15"
           />
         </div>
         <div>
@@ -101,7 +101,7 @@ export function AuthForm() {
             placeholder="••••••••"
             autoComplete={mode === "login" ? "current-password" : "new-password"}
             dir="ltr"
-            className="w-full rounded-2xl border-2 border-ink/10 bg-surface px-4 py-3 text-right text-ink outline-none focus:border-game-purple"
+            className="w-full rounded-2xl border border-ink/10 bg-surface px-4 py-3 text-right text-ink outline-none transition-shadow focus:border-game-purple focus:ring-2 focus:ring-game-purple/15"
           />
         </div>
 

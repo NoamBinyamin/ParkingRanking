@@ -31,12 +31,12 @@ export function ReportTypeToggle({
       </div>
 
       {reportType === "saw" && (
-        <div className="mt-2 flex items-center justify-center gap-2.5 rounded-full border-2 border-game-blue/30 bg-game-blue/10 px-3 py-1.5">
+        <div className="mt-2 flex items-center justify-center gap-2.5 rounded-full border border-game-blue/30 bg-game-blue/10 px-3 py-1.5">
           <span className="text-xs font-semibold text-ink/60">כמה מקומות ראיתם?</span>
           <button
             onClick={() => onChangeCount(Math.max(1, spotCount - 1))}
             aria-label="פחות מקומות"
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-ink/10 bg-surface font-display text-sm font-bold text-ink"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-ink/15 bg-surface font-display text-sm font-bold text-ink"
           >
             −
           </button>
@@ -44,7 +44,7 @@ export function ReportTypeToggle({
           <button
             onClick={() => onChangeCount(Math.min(MAX_SPOT_COUNT, spotCount + 1))}
             aria-label="יותר מקומות"
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-ink/10 bg-surface font-display text-sm font-bold text-ink"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-ink/15 bg-surface font-display text-sm font-bold text-ink"
           >
             +
           </button>
