@@ -38,7 +38,10 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
   }
 
   return (
-    <div className="flex min-h-screen flex-col pb-28">
+    <div
+      className="flex min-h-screen flex-col"
+      style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
+    >
       <header className="flex items-center justify-between px-5 py-4">
         <Link href="/profile" className="flex items-center gap-2">
           <span className="text-2xl">{activeProfile.avatar_emoji}</span>
@@ -66,7 +69,10 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
 
       <main className="flex-1 px-5">{children}</main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-10 flex justify-center pb-4">
+      <nav
+        className="fixed inset-x-0 bottom-0 z-10 flex justify-center"
+        style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
+      >
         <div className="flex gap-2 rounded-full border-2 border-ink/10 bg-white/90 p-2 shadow-lg backdrop-blur">
           {TABS.map((tab) => {
             const isActive = pathname?.startsWith(tab.href);
