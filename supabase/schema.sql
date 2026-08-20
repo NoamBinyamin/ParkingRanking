@@ -62,6 +62,19 @@ create table public.user_achievements (
   primary key (user_id, achievement_id)
 );
 
+-- Web Push subscriptions (real iOS/Android push, not just the in-app
+-- broadcast toast). One row per device/browser a user has enabled
+-- notifications on; endpoint is unique so re-subscribing (e.g. after a
+-- token refresh) upserts instead of duplicating.
+create table public.push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  created_at timestamptz not null default now()
+);
+
 -- ---------------------------------------------------------------------------
 -- Triggers: keep profiles + points_awarded consistent automatically
 -- ---------------------------------------------------------------------------
@@ -292,6 +305,7 @@ alter table public.profiles enable row level security;
 alter table public.zones enable row level security;
 alter table public.reports enable row level security;
 alter table public.user_achievements enable row level security;
+alter table public.push_subscriptions enable row level security;
 
 -- Profiles: everyone signed in can read (needed for leaderboard usernames),
 -- but you can only edit your own row.
@@ -331,6 +345,17 @@ create policy "achievements are readable by their owner"
   on public.user_achievements for select
   to authenticated
   using (auth.uid() = user_id);
+
+-- Push subscriptions: a user manages only their own (register/unregister
+-- this device). Reading OTHER users' subscriptions to actually send a
+-- push happens only through get_push_subscriptions_to_notify() below,
+-- which runs as security definer -- there's no policy here that exposes
+-- other people's subscriptions directly.
+create policy "push subscriptions are manageable by their owner"
+  on public.push_subscriptions for all
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 -- ---------------------------------------------------------------------------
 -- Aggregate read functions (leaderboard + time-based analytics)
@@ -441,6 +466,24 @@ as $$
 $$;
 
 grant execute on function public.get_my_progress to authenticated;
+
+-- Every OTHER user's push subscriptions, for the reporting user's own
+-- server action to send real pushes to after a report. Security definer
+-- because the RLS policy on push_subscriptions otherwise only lets a
+-- user see their own rows -- this is the one deliberate, narrow
+-- exception (still just endpoint/keys, never who owns which).
+create or replace function public.get_push_subscriptions_to_notify(exclude_user_id uuid)
+returns table (endpoint text, p256dh text, auth text)
+language sql
+security definer
+set search_path = public
+as $$
+  select endpoint, p256dh, auth
+  from public.push_subscriptions
+  where user_id <> exclude_user_id;
+$$;
+
+grant execute on function public.get_push_subscriptions_to_notify to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Report cooldown: reports must be >=15 minutes apart. Rather than reject

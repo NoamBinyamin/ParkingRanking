@@ -1,14 +1,79 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import webpush from "web-push";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createReport, getRecentReports } from "@/lib/services/reports";
 import { getMyAchievements } from "@/lib/services/achievements";
+import { getMyProfile } from "@/lib/services/profile";
 import { ACHIEVEMENTS } from "@/lib/achievements";
 import { MAX_SPOT_COUNT } from "@/lib/reportTypes";
+import { formatPoints } from "@/lib/utils/points";
 import type { Report, ReportType } from "@/lib/types/database";
 
 const MIN_REPORT_INTERVAL_MINUTES = 15;
+
+function isPushConfigured(): boolean {
+  return Boolean(process.env.VAPID_PRIVATE_KEY && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
+}
+
+// Real Web Push, in addition to the in-app broadcast toast (which the
+// zones/leaderboard screens already subscribe to via Supabase Realtime).
+// Never allowed to break the actual report -- every failure path here is
+// caught and logged, not thrown.
+async function sendPushToOthers(
+  supabase: SupabaseClient,
+  reporterId: string,
+  zoneId: string,
+  points: number
+) {
+  if (!isPushConfigured()) return;
+
+  try {
+    const [{ data: zone }, reporterProfile] = await Promise.all([
+      supabase.from("zones").select("name, icon").eq("id", zoneId).single(),
+      getMyProfile(supabase, reporterId),
+    ]);
+    if (!zone) return;
+
+    const { data: subs, error } = await supabase.rpc("get_push_subscriptions_to_notify", {
+      exclude_user_id: reporterId,
+    });
+    if (error || !subs) return;
+
+    webpush.setVapidDetails(
+      "mailto:parkpoints@example.com",
+      process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+      process.env.VAPID_PRIVATE_KEY!
+    );
+
+    const payload = JSON.stringify({
+      title: "🅿️ דיווח חדש!",
+      body: `${reporterProfile.username} דיווח/ה על ${zone.icon} ${zone.name} (${formatPoints(points)})`,
+      url: "/report",
+    });
+
+    const subscriptions = subs as { endpoint: string; p256dh: string; auth: string }[];
+    await Promise.allSettled(
+      subscriptions.map(async (sub) => {
+        try {
+          await webpush.sendNotification(
+            { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+            payload
+          );
+        } catch (err) {
+          const statusCode = (err as { statusCode?: number }).statusCode;
+          if (statusCode === 404 || statusCode === 410) {
+            await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+          }
+        }
+      })
+    );
+  } catch (err) {
+    console.error("Failed to send push notifications", err);
+  }
+}
 
 export async function submitParkingReport(zoneId: string, reportType: ReportType, spotCount: number) {
   const supabase = await createSupabaseServerClient();
@@ -40,6 +105,8 @@ export async function submitParkingReport(zoneId: string, reportType: ReportType
   const newlyUnlocked = ACHIEVEMENTS.filter(
     (achievement) => !beforeIds.has(achievement.id) && after.some((a) => a.achievement_id === achievement.id)
   );
+
+  await sendPushToOthers(supabase, data.user.id, zoneId, report.points_awarded);
 
   revalidatePath("/leaderboard");
   return { status: "created" as const, report, newlyUnlocked };

@@ -2,6 +2,7 @@
 
 import { AchievementsGrid } from "@/components/achievements/AchievementsGrid";
 import { RecentReportsList } from "@/components/profile/RecentReportsList";
+import { PushNotificationSettings } from "@/components/profile/PushNotificationSettings";
 import { Card } from "@/components/ui/Card";
 import { ScreenLoading } from "@/components/ui/ScreenLoading";
 import { formatJoinDate } from "@/lib/utils/time";
@@ -55,6 +56,8 @@ export function ProfileScreen() {
         <h2 className="mb-3 font-display text-lg font-bold text-ink">דיווחים אחרונים</h2>
         <RecentReportsList reports={recentReports} />
       </div>
+
+      <PushNotificationSettings userId={profile.id} />
     </div>
   );
 }
