@@ -19,10 +19,15 @@ const TABS = [
 const SWIPE_THRESHOLD_PX = 60;
 
 const slideVariants = {
-  enter: (dir: number) => ({ x: dir >= 0 ? 32 : -32, opacity: 0 }),
+  enter: (dir: number) => ({ x: dir >= 0 ? 56 : -56, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir >= 0 ? -32 : 32, opacity: 0 }),
+  exit: (dir: number) => ({ x: dir >= 0 ? -56 : 56, opacity: 0 }),
 };
+
+// A smooth "ease-out-expo"-style curve, plus enter/exit overlapping
+// (mode="popLayout" below) instead of one finishing before the other
+// starts -- reads as one continuous motion rather than two separate steps.
+const slideTransition = { duration: 0.32, ease: [0.22, 1, 0.36, 1] as const };
 
 export function AppShell({ profile: initialProfile, children }: { profile: Profile; children: ReactNode }) {
   // Shares the same SWR cache entry every screen reads/writes (optimistic
@@ -111,7 +116,7 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <AnimatePresence mode="wait" initial={false} custom={direction}>
+        <AnimatePresence mode="popLayout" initial={false} custom={direction}>
           <motion.div
             key={pathname}
             custom={direction}
@@ -119,7 +124,7 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={slideTransition}
             className="flex flex-1 flex-col"
           >
             {children}
@@ -139,12 +144,19 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
                 key={tab.href}
                 href={tab.href}
                 whileTap={{ scale: 0.9 }}
-                className={`flex items-center gap-2 rounded-full px-5 py-3 font-display text-sm font-semibold transition-colors ${
-                  isActive ? "bg-game-purple text-white" : "text-ink/50"
+                className={`relative flex items-center gap-2 rounded-full px-5 py-3 font-display text-sm font-semibold transition-colors ${
+                  isActive ? "text-white" : "text-ink/50"
                 }`}
               >
-                <span className="text-lg">{tab.icon}</span>
-                {tab.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="nav-active-pill"
+                    className="absolute inset-0 rounded-full bg-game-purple"
+                    transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                  />
+                )}
+                <span className="relative z-10 text-lg">{tab.icon}</span>
+                <span className="relative z-10">{tab.label}</span>
               </MotionLink>
             );
           })}
