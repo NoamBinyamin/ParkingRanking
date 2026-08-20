@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseServerClient, getCurrentUser } from "@/lib/supabase/server";
 import { getLeaderboard, getZoneTimeStats } from "@/lib/services/leaderboard";
 import { getMyProfile } from "@/lib/services/profile";
 import { getActiveZones } from "@/lib/services/zones";
@@ -6,8 +6,8 @@ import { getGhostComparison } from "@/lib/utils/ghost";
 import { LeaderboardScreen } from "@/components/leaderboard/LeaderboardScreen";
 
 export default async function LeaderboardPage() {
+  const user = await getCurrentUser();
   const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.auth.getUser();
 
   const [week, month, all, zoneTimeStats, zones, profile] = await Promise.all([
     getLeaderboard(supabase, "week"),
@@ -15,10 +15,10 @@ export default async function LeaderboardPage() {
     getLeaderboard(supabase, "all"),
     getZoneTimeStats(supabase),
     getActiveZones(supabase),
-    data.user ? getMyProfile(supabase, data.user.id) : Promise.resolve(null),
+    user ? getMyProfile(supabase, user.id) : Promise.resolve(null),
   ]);
 
-  const ghostComparison = getGhostComparison(month, data.user?.id ?? null);
+  const ghostComparison = getGhostComparison(month, user?.id ?? null);
 
   return (
     <LeaderboardScreen
@@ -26,7 +26,7 @@ export default async function LeaderboardPage() {
       zones={zones}
       zoneTimeStats={zoneTimeStats}
       ghostComparison={ghostComparison}
-      currentUserId={data.user?.id ?? null}
+      currentUserId={user?.id ?? null}
       totalScore={profile?.total_score ?? 0}
       currentStreak={profile?.current_streak ?? 0}
     />

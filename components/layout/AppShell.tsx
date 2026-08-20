@@ -2,11 +2,14 @@
 
 import { useEffect } from "react";
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import type { Profile } from "@/lib/types/database";
 import { useUserStore } from "@/lib/stores/useUserStore";
 import { signOut } from "@/lib/services/auth";
+
+const MotionLink = motion.create(Link);
 
 const TABS = [
   { href: "/report", label: "חניה", icon: "🅿️" },
@@ -37,7 +40,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
   return (
     <div className="flex min-h-screen flex-col pb-28">
       <header className="flex items-center justify-between px-5 py-4">
-        <button onClick={() => router.push("/profile")} className="flex items-center gap-2">
+        <Link href="/profile" className="flex items-center gap-2">
           <span className="text-2xl">{activeProfile.avatar_emoji}</span>
           <div className="text-start">
             <p className="font-display text-sm font-semibold text-ink/70">
@@ -52,7 +55,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
               🔥 {activeProfile.current_streak}
             </span>
           )}
-        </button>
+        </Link>
         <button
           onClick={handleSignOut}
           className="text-sm font-semibold text-ink/40 hover:text-game-red-dark"
@@ -68,9 +71,9 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
           {TABS.map((tab) => {
             const isActive = pathname?.startsWith(tab.href);
             return (
-              <motion.button
+              <MotionLink
                 key={tab.href}
-                onClick={() => router.push(tab.href)}
+                href={tab.href}
                 whileTap={{ scale: 0.9 }}
                 className={`flex items-center gap-2 rounded-full px-5 py-3 font-display text-sm font-semibold transition-colors ${
                   isActive ? "bg-game-purple text-white" : "text-ink/50"
@@ -78,7 +81,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
               >
                 <span className="text-lg">{tab.icon}</span>
                 {tab.label}
-              </motion.button>
+              </MotionLink>
             );
           })}
         </div>

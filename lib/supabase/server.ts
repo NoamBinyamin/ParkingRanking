@@ -1,7 +1,11 @@
+import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export async function createSupabaseServerClient() {
+// Wrapped in React's cache() so multiple calls within the same request
+// (layout + page + any nested component) share one client instance and,
+// more importantly, one auth check -- see getCurrentUser below.
+export const createSupabaseServerClient = cache(async function createSupabaseServerClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
@@ -25,4 +29,14 @@ export async function createSupabaseServerClient() {
       },
     }
   );
-}
+});
+
+// auth.getUser() is a real network round-trip to Supabase (by design --
+// it re-verifies the JWT rather than trusting the cookie). The layout and
+// the page for a given route both need the current user, so without this
+// cache() wrapper every navigation paid for that round-trip twice.
+export const getCurrentUser = cache(async function getCurrentUser() {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.auth.getUser();
+  return data.user;
+});
