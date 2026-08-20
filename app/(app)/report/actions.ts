@@ -9,7 +9,6 @@ import { getMyAchievements } from "@/lib/services/achievements";
 import { getMyProfile } from "@/lib/services/profile";
 import { ACHIEVEMENTS } from "@/lib/achievements";
 import { MAX_SPOT_COUNT } from "@/lib/reportTypes";
-import { formatPoints } from "@/lib/utils/points";
 import type { Report, ReportType } from "@/lib/types/database";
 
 const MIN_REPORT_INTERVAL_MINUTES = 15;
@@ -22,12 +21,7 @@ function isPushConfigured(): boolean {
 // zones/leaderboard screens already subscribe to via Supabase Realtime).
 // Never allowed to break the actual report -- every failure path here is
 // caught and logged, not thrown.
-async function sendPushToOthers(
-  supabase: SupabaseClient,
-  reporterId: string,
-  zoneId: string,
-  points: number
-) {
+async function sendPushToOthers(supabase: SupabaseClient, reporterId: string, zoneId: string) {
   if (!isPushConfigured()) return;
 
   try {
@@ -49,8 +43,8 @@ async function sendPushToOthers(
     );
 
     const payload = JSON.stringify({
-      title: "🅿️ דיווח חדש!",
-      body: `${reporterProfile.username} דיווח/ה על ${zone.icon} ${zone.name} (${formatPoints(points)})`,
+      title: "🅿️ דיווח חדש התקבל!",
+      body: `🚗 ${reporterProfile.username} דיווח על חניה באיזור ${zone.name} ${zone.icon}!`,
       url: "/report",
     });
 
@@ -106,7 +100,7 @@ export async function submitParkingReport(zoneId: string, reportType: ReportType
     (achievement) => !beforeIds.has(achievement.id) && after.some((a) => a.achievement_id === achievement.id)
   );
 
-  await sendPushToOthers(supabase, data.user.id, zoneId, report.points_awarded);
+  await sendPushToOthers(supabase, data.user.id, zoneId);
 
   revalidatePath("/leaderboard");
   return { status: "created" as const, report, newlyUnlocked };
