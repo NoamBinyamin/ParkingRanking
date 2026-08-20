@@ -63,8 +63,10 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
 
     if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX || Math.abs(deltaY) > Math.abs(deltaX)) return;
 
-    // Swipe left -> next tab, swipe right -> previous tab.
-    const target = deltaX < 0 ? TABS[currentIndex + 1] : TABS[currentIndex - 1];
+    // RTL-mirrored: swipe right -> next tab, swipe left -> previous tab
+    // (the reverse of the LTR default, matching how RTL paging/carousel
+    // gestures are conventionally mirrored).
+    const target = deltaX > 0 ? TABS[currentIndex + 1] : TABS[currentIndex - 1];
     if (target) router.push(target.href);
   }
 
