@@ -6,7 +6,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Profile } from "@/lib/types/database";
 import { useProfile } from "@/lib/hooks/useProfile";
+import { useLiveReportFeed, type LiveReportEvent } from "@/lib/hooks/useLiveReportFeed";
+import { LiveReportToast } from "@/components/layout/LiveReportToast";
 import { signOut } from "@/lib/services/auth";
+
+const LIVE_TOAST_DURATION_MS = 4000;
 
 const MotionLink = motion.create(Link);
 
@@ -52,7 +56,30 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
     prevIndexRef.current = currentIndex;
   }, [currentIndex]);
 
+  // A screen scrolled down (e.g. Leaderboard/Profile) carrying that scroll
+  // position into a swipe-triggered route change caused a layout jump
+  // right as the fixed nav's pill was mid-animation, reading as the pill
+  // "going crazy". Landing every navigation at the top avoids that, and
+  // matches what switching tabs should feel like anyway.
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [pathname]);
+
+  // A vertical scroll gesture can still register a touchend with enough
+  // horizontal wobble to look like a swipe. Any real scroll event firing
+  // between touchstart and touchend means this was a scroll, full stop --
+  // more reliable than delta math alone.
+  const scrolledDuringTouch = useRef(false);
+  useEffect(() => {
+    function onScroll() {
+      scrolledDuringTouch.current = true;
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   function handleTouchStart(e: TouchEvent) {
+    scrolledDuringTouch.current = false;
     const t = e.touches[0];
     touchStart.current = { x: t.clientX, y: t.clientY };
   }
@@ -60,7 +87,7 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
   function handleTouchEnd(e: TouchEvent) {
     const start = touchStart.current;
     touchStart.current = null;
-    if (!start || currentIndex === -1) return;
+    if (!start || currentIndex === -1 || scrolledDuringTouch.current) return;
 
     const end = e.changedTouches[0];
     const deltaX = end.clientX - start.x;
@@ -81,11 +108,28 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
     router.refresh();
   }
 
+  // Broadcasts a small "someone just reported X" toast to everyone else
+  // currently in the app -- skips the reporter themselves (they already
+  // get the full confirmation modal for their own report).
+  const [liveToast, setLiveToast] = useState<{ id: number; event: LiveReportEvent } | null>(null);
+  const toastIdRef = useRef(0);
+  useLiveReportFeed(activeProfile.id, (event) => {
+    toastIdRef.current += 1;
+    setLiveToast({ id: toastIdRef.current, event });
+  });
+  useEffect(() => {
+    if (!liveToast) return;
+    const timeout = setTimeout(() => setLiveToast(null), LIVE_TOAST_DURATION_MS);
+    return () => clearTimeout(timeout);
+  }, [liveToast]);
+
   return (
     <div
       className="flex min-h-screen flex-col"
       style={{ paddingBottom: "calc(7rem + env(safe-area-inset-bottom))" }}
     >
+      <LiveReportToast toast={liveToast} />
+
       <header className="flex items-center justify-between px-5 py-4">
         <Link href="/profile" className="flex items-center gap-2">
           <span className="text-2xl">{activeProfile.avatar_emoji}</span>
