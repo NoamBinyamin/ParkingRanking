@@ -37,6 +37,13 @@ create table public.reports (
   user_id uuid not null references public.profiles (id) on delete cascade,
   zone_id uuid not null references public.zones (id) on delete restrict,
   points_awarded integer not null,
+  -- 'parked': the reporter actually parked there, points_awarded = the
+  -- zone's point_value. 'saw': the reporter just spotted an open space
+  -- without parking there themselves -- always a flat bonus regardless
+  -- of zone (see set_report_points() below), but spot_count still feeds
+  -- the analytics with real weight so multiple sightings count for more.
+  report_type text not null default 'parked' check (report_type in ('parked', 'saw')),
+  spot_count integer not null default 1 check (spot_count between 1 and 5),
   created_at timestamptz not null default now()
 );
 
@@ -82,6 +89,7 @@ create trigger on_auth_user_created
 
 -- Snapshot the zone's point value onto the report at insert time, so a
 -- later change to a zone's point_value never rewrites report history.
+-- Keep SAW_BONUS_POINTS here in sync with lib/reportTypes.ts.
 create or replace function public.set_report_points()
 returns trigger
 language plpgsql
@@ -89,8 +97,16 @@ security definer
 set search_path = public
 as $$
 begin
-  if new.points_awarded is null then
-    select point_value into new.points_awarded from public.zones where id = new.zone_id;
+  if new.report_type = 'saw' then
+    -- Flat bonus regardless of zone or spot_count -- enforced here
+    -- server-side so a client can never inflate it.
+    new.points_awarded := 2;
+    new.spot_count := greatest(1, least(coalesce(new.spot_count, 1), 5));
+  else
+    new.spot_count := 1;
+    if new.points_awarded is null then
+      select point_value into new.points_awarded from public.zones where id = new.zone_id;
+    end if;
   end if;
   return new;
 end;
@@ -378,7 +394,10 @@ as $$
     z.name as zone_name,
     extract(dow from r.created_at)::int as day_of_week,
     extract(hour from r.created_at)::int as hour_of_day,
-    count(*) as report_count
+    -- Summed rather than counted: a "saw 3 open spots" report should
+    -- weigh 3x as heavily toward "parking is available here" as a
+    -- single 'parked' report (whose spot_count is always 1).
+    sum(r.spot_count)::bigint as report_count
   from public.reports r
   join public.zones z on z.id = r.zone_id
   group by z.id, z.name, day_of_week, hour_of_day;
@@ -453,9 +472,15 @@ begin
     raise exception 'No recent report within the cooldown window to replace';
   end if;
 
-  select point_value into new_points from public.zones where id = new_zone_id;
-  if new_points is null then
-    raise exception 'Unknown zone';
+  -- Replacing only ever changes the zone, never the report_type -- a
+  -- 'saw' report keeps its flat bonus regardless of the new zone.
+  if last_report.report_type = 'saw' then
+    new_points := 2;
+  else
+    select point_value into new_points from public.zones where id = new_zone_id;
+    if new_points is null then
+      raise exception 'Unknown zone';
+    end if;
   end if;
 
   update public.profiles

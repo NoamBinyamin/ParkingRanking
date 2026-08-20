@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import type { Zone } from "@/lib/types/database";
+import type { ReportType, Zone } from "@/lib/types/database";
 import type { AchievementDefinition } from "@/lib/achievements";
 import { formatPoints, isPositive } from "@/lib/utils/points";
 import { Button } from "@/components/ui/Button";
@@ -12,15 +12,25 @@ const JACKPOT_THRESHOLD = 50;
 
 export function ReportConfirmation({
   zone,
+  reportType,
+  spotCount,
+  pointsAwarded,
   newlyUnlocked = [],
   onClose,
 }: {
   zone: Zone;
+  reportType: ReportType;
+  spotCount: number;
+  pointsAwarded: number;
   newlyUnlocked?: AchievementDefinition[];
   onClose: () => void;
 }) {
-  const positive = isPositive(zone.point_value);
-  const isJackpot = zone.point_value >= JACKPOT_THRESHOLD;
+  const isSighting = reportType === "saw";
+  // A sighting is never a "bad outcome" -- it always earns the flat
+  // bonus regardless of which zone was picked, so it's always shown as
+  // a happy confirmation even for a zone that would sting in "parked" mode.
+  const positive = isSighting ? true : isPositive(zone.point_value);
+  const isJackpot = !isSighting && zone.point_value >= JACKPOT_THRESHOLD;
   const hasUnlocks = newlyUnlocked.length > 0;
 
   useEffect(() => {
@@ -75,7 +85,7 @@ export function ReportConfirmation({
               transition={{ duration: 0.7, times: [0, 0.65, 0.85, 1], ease: "easeOut" }}
               aria-hidden
             >
-              {zone.icon}
+              {isSighting ? "👀" : zone.icon}
             </motion.div>
           ) : (
             <motion.div
@@ -94,9 +104,15 @@ export function ReportConfirmation({
               positive ? "text-game-green-dark" : "text-game-red-dark"
             }`}
           >
-            {formatPoints(zone.point_value)}
+            {formatPoints(pointsAwarded)}
           </p>
-          <p className="mt-1 text-sm leading-relaxed text-ink/60">{zone.description}</p>
+          <p className="mt-1 text-sm leading-relaxed text-ink/60">
+            {isSighting
+              ? `תודה שעזרתם לקהילה! דיווחתם שראיתם ${spotCount} מקומ${spotCount === 1 ? "" : "ות"} פנוי${
+                  spotCount === 1 ? "" : "ים"
+                } ב-${zone.name} 🙌`
+              : zone.description}
+          </p>
 
           {hasUnlocks && (
             <motion.div

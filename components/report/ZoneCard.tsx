@@ -11,10 +11,13 @@ export function ZoneCard({
   zone,
   isSelected,
   onSelect,
+  displayPoints,
 }: {
   zone: Zone;
   isSelected: boolean;
   onSelect: () => void;
+  /** Overrides the badge shown -- e.g. the flat "saw" bonus instead of the zone's own point_value. */
+  displayPoints?: number;
 }) {
   const isJackpot = zone.point_value >= JACKPOT_THRESHOLD;
 
@@ -40,7 +43,7 @@ export function ZoneCard({
       )}
       <span className="text-2xl">{zone.icon}</span>
       <span className="font-display text-xs font-semibold leading-tight text-ink">{zone.name}</span>
-      <PointsBadge value={zone.point_value} size="sm" />
+      <PointsBadge value={displayPoints ?? zone.point_value} size="sm" />
     </motion.button>
   );
 }

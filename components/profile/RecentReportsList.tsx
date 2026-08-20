@@ -12,18 +12,28 @@ export function RecentReportsList({ reports }: { reports: ReportWithZone[] }) {
 
   return (
     <Card className="divide-y divide-ink/5">
-      {reports.map((report) => (
-        <div key={report.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-          <span className="text-2xl">{report.zone.icon}</span>
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-display text-sm font-semibold text-ink">{report.zone.name}</p>
-            <p className="text-xs text-ink/40" dir="ltr">
-              {formatReportTime(report.created_at)}
-            </p>
+      {reports.map((report) => {
+        const isSighting = report.report_type === "saw";
+        return (
+          <div key={report.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+            <span className="text-2xl">{isSighting ? "👀" : report.zone.icon}</span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-display text-sm font-semibold text-ink">
+                {report.zone.name}
+                {isSighting && (
+                  <span className="ms-1 text-xs font-normal text-ink/40">
+                    (ראיתי {report.spot_count > 1 ? `${report.spot_count} מקומות` : "מקום"})
+                  </span>
+                )}
+              </p>
+              <p className="text-xs text-ink/40" dir="ltr">
+                {formatReportTime(report.created_at)}
+              </p>
+            </div>
+            <PointsBadge value={report.points_awarded} size="sm" />
           </div>
-          <PointsBadge value={report.points_awarded} size="sm" />
-        </div>
-      ))}
+        );
+      })}
     </Card>
   );
 }

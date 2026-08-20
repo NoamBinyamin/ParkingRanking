@@ -5,11 +5,12 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createReport, getRecentReports } from "@/lib/services/reports";
 import { getMyAchievements } from "@/lib/services/achievements";
 import { ACHIEVEMENTS } from "@/lib/achievements";
-import type { Report } from "@/lib/types/database";
+import { MAX_SPOT_COUNT } from "@/lib/reportTypes";
+import type { Report, ReportType } from "@/lib/types/database";
 
 const MIN_REPORT_INTERVAL_MINUTES = 15;
 
-export async function submitParkingReport(zoneId: string) {
+export async function submitParkingReport(zoneId: string, reportType: ReportType, spotCount: number) {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) throw new Error("משתמש לא מחובר");
@@ -30,7 +31,10 @@ export async function submitParkingReport(zoneId: string) {
   const before = await getMyAchievements(supabase);
   const beforeIds = new Set(before.map((a) => a.achievement_id));
 
-  const report = await createReport(supabase, data.user.id, zoneId);
+  // Clamped here too (not just in the DB trigger) so the client never
+  // even sees an out-of-range value reflected back at it.
+  const clampedSpotCount = reportType === "saw" ? Math.max(1, Math.min(MAX_SPOT_COUNT, spotCount)) : 1;
+  const report = await createReport(supabase, data.user.id, zoneId, reportType, clampedSpotCount);
 
   const after = await getMyAchievements(supabase);
   const newlyUnlocked = ACHIEVEMENTS.filter(

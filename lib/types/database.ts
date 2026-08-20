@@ -21,11 +21,15 @@ export type Zone = {
   created_at: string;
 };
 
+export type ReportType = "parked" | "saw";
+
 export type Report = {
   id: string;
   user_id: string;
   zone_id: string;
   points_awarded: number;
+  report_type: ReportType;
+  spot_count: number;
   created_at: string;
 };
 

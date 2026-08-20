@@ -1,14 +1,16 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Report, ReportWithZone } from "@/lib/types/database";
+import type { Report, ReportType, ReportWithZone } from "@/lib/types/database";
 
 export async function createReport(
   supabase: SupabaseClient,
   userId: string,
-  zoneId: string
+  zoneId: string,
+  reportType: ReportType,
+  spotCount: number
 ): Promise<Report> {
   const { data, error } = await supabase
     .from("reports")
-    .insert({ user_id: userId, zone_id: zoneId })
+    .insert({ user_id: userId, zone_id: zoneId, report_type: reportType, spot_count: spotCount })
     .select()
     .single();
 

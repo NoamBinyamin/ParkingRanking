@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ReportWithZone, Zone } from "@/lib/types/database";
+import type { ReportType, ReportWithZone, Zone } from "@/lib/types/database";
 import type { AchievementDefinition } from "@/lib/achievements";
 import { ZoneGrid } from "@/components/report/ZoneGrid";
 import { ReportConfirmation } from "@/components/report/ReportConfirmation";
+import { ReportTypeToggle } from "@/components/report/ReportTypeToggle";
 import { CarDrivingIndicator } from "@/components/report/CarDrivingIndicator";
 import { RightNowCard } from "@/components/report/RightNowCard";
 import { PoopRain } from "@/components/report/PoopRain";
@@ -12,6 +13,7 @@ import { RecentReportDialog } from "@/components/report/RecentReportDialog";
 import { WelcomeSplash } from "@/components/onboarding/WelcomeSplash";
 import { Button } from "@/components/ui/Button";
 import { ScreenLoading } from "@/components/ui/ScreenLoading";
+import { SAW_BONUS_POINTS } from "@/lib/reportTypes";
 import { useCurrentUserId } from "@/lib/hooks/useCurrentUser";
 import { useZones } from "@/lib/hooks/useZones";
 import { useZoneTimeStats } from "@/lib/hooks/useLeaderboard";
@@ -35,8 +37,12 @@ export function ReportScreen() {
   const revalidateAfterReport = useRevalidateAfterReport();
 
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
+  const [reportType, setReportType] = useState<ReportType>("parked");
+  const [spotCount, setSpotCount] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [confirmedZone, setConfirmedZone] = useState<Zone | null>(null);
+  const [confirmed, setConfirmed] = useState<{ zone: Zone; reportType: ReportType; spotCount: number; points: number } | null>(
+    null
+  );
   const [newlyUnlocked, setNewlyUnlocked] = useState<AchievementDefinition[]>([]);
   const [showPoopRain, setShowPoopRain] = useState(false);
   const [tooSoon, setTooSoon] = useState<{ lastReport: ReportWithZone; minutesRemaining: number } | null>(null);
@@ -59,10 +65,12 @@ export function ReportScreen() {
 
   const selectedZone = zones.find((z) => z.id === selectedZoneId) ?? null;
 
-  function finishReport(zone: Zone) {
-    setConfirmedZone(zone);
+  function finishReport(zone: Zone, type: ReportType, count: number, points: number) {
+    setConfirmed({ zone, reportType: type, spotCount: count, points });
     setSelectedZoneId(null);
-    if (zone.slug === GAG_ZONE_SLUG) {
+    setReportType("parked");
+    setSpotCount(1);
+    if (zone.slug === GAG_ZONE_SLUG && type === "parked") {
       setShowPoopRain(true);
     }
   }
@@ -71,15 +79,15 @@ export function ReportScreen() {
     if (!selectedZone) return;
     setIsSubmitting(true);
     try {
-      const result = await submitParkingReport(selectedZone.id);
+      const result = await submitParkingReport(selectedZone.id, reportType, spotCount);
       if (result.status === "too-soon") {
         setTooSoon({ lastReport: result.lastReport, minutesRemaining: result.minutesRemaining });
         return;
       }
-      addPoints(selectedZone.point_value);
+      addPoints(result.report.points_awarded);
       revalidateAfterReport();
       setNewlyUnlocked(result.newlyUnlocked);
-      finishReport(selectedZone);
+      finishReport(selectedZone, reportType, spotCount, result.report.points_awarded);
     } catch (err) {
       console.error(err);
     } finally {
@@ -91,12 +99,12 @@ export function ReportScreen() {
     if (!tooSoon || !selectedZone) return;
     setIsSubmitting(true);
     try {
-      await replaceLastReport(selectedZone.id);
-      addPoints(selectedZone.point_value - tooSoon.lastReport.points_awarded);
+      const updated = await replaceLastReport(selectedZone.id);
+      addPoints(updated.points_awarded - tooSoon.lastReport.points_awarded);
       revalidateAfterReport();
       setNewlyUnlocked([]);
       setTooSoon(null);
-      finishReport(selectedZone);
+      finishReport(selectedZone, updated.report_type, updated.spot_count, updated.points_awarded);
     } catch (err) {
       console.error(err);
     } finally {
@@ -118,11 +126,23 @@ export function ReportScreen() {
         <p className="text-xs text-ink/50">בחרו אזור ונעלו את הניקוד</p>
       </div>
 
+      <ReportTypeToggle
+        reportType={reportType}
+        spotCount={spotCount}
+        onChangeType={setReportType}
+        onChangeCount={setSpotCount}
+      />
+
       <div className="mb-3">
         <RightNowCard zones={zones} stats={zoneTimeStats} />
       </div>
 
-      <ZoneGrid zones={zones} selectedZoneId={selectedZoneId} onSelect={setSelectedZoneId} />
+      <ZoneGrid
+        zones={zones}
+        selectedZoneId={selectedZoneId}
+        onSelect={setSelectedZoneId}
+        displayPoints={reportType === "saw" ? SAW_BONUS_POINTS : undefined}
+      />
 
       <div className="sticky bottom-24 mt-auto pt-4">
         <Button
@@ -134,7 +154,11 @@ export function ReportScreen() {
           pulse={Boolean(selectedZone)}
           onClick={handleSubmit}
         >
-          {selectedZone ? `דיווח על ${selectedZone.name} 🚀` : "בחרו אזור"}
+          {selectedZone
+            ? reportType === "saw"
+              ? `דיווח שראיתי מקום ב${selectedZone.name} 👀`
+              : `דיווח על ${selectedZone.name} 🚀`
+            : "בחרו אזור"}
         </Button>
       </div>
 
@@ -153,12 +177,15 @@ export function ReportScreen() {
         />
       )}
 
-      {confirmedZone && (
+      {confirmed && (
         <ReportConfirmation
-          zone={confirmedZone}
+          zone={confirmed.zone}
+          reportType={confirmed.reportType}
+          spotCount={confirmed.spotCount}
+          pointsAwarded={confirmed.points}
           newlyUnlocked={newlyUnlocked}
           onClose={() => {
-            setConfirmedZone(null);
+            setConfirmed(null);
             setNewlyUnlocked([]);
           }}
         />
