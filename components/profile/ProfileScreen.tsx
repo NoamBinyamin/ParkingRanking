@@ -1,34 +1,25 @@
 "use client";
 
-import type { Profile, ReportWithZone, UserAchievement } from "@/lib/types/database";
-import type { AchievementProgress } from "@/lib/achievements";
 import { AchievementsGrid } from "@/components/achievements/AchievementsGrid";
 import { RecentReportsList } from "@/components/profile/RecentReportsList";
 import { Card } from "@/components/ui/Card";
+import { ScreenLoading } from "@/components/ui/ScreenLoading";
 import { formatJoinDate } from "@/lib/utils/time";
 import { useCurrentUserId } from "@/lib/hooks/useCurrentUser";
 import { useProfile } from "@/lib/hooks/useProfile";
 import { useMyAchievements, useMyProgress } from "@/lib/hooks/useAchievements";
 import { useRecentReports } from "@/lib/hooks/useReports";
 
-export function ProfileScreen({
-  userId,
-  initialProfile,
-  initialAchievements,
-  initialProgress,
-  initialRecentReports,
-}: {
-  userId: string;
-  initialProfile: Profile;
-  initialAchievements: UserAchievement[];
-  initialProgress: AchievementProgress;
-  initialRecentReports: ReportWithZone[];
-}) {
-  const currentUserId = useCurrentUserId(userId);
-  const { data: profile = initialProfile } = useProfile(currentUserId, initialProfile);
-  const { data: achievements = [] } = useMyAchievements(currentUserId, initialAchievements);
-  const { data: progress = initialProgress } = useMyProgress(currentUserId, initialProgress);
-  const { data: recentReports = [] } = useRecentReports(currentUserId, 10, initialRecentReports);
+export function ProfileScreen() {
+  const currentUserId = useCurrentUserId();
+  const { data: profile } = useProfile(currentUserId);
+  const { data: achievements } = useMyAchievements(currentUserId);
+  const { data: progress } = useMyProgress(currentUserId);
+  const { data: recentReports } = useRecentReports(currentUserId, 10);
+
+  if (!profile || !achievements || !progress || !recentReports) {
+    return <ScreenLoading />;
+  }
 
   return (
     <div className="space-y-6 pb-6 pt-2">

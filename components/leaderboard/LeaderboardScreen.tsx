@@ -1,36 +1,28 @@
 "use client";
 
-import type { LeaderboardEntry, LeaderboardPeriod, Profile, Zone, ZoneTimeStat } from "@/lib/types/database";
 import { LeaderboardTabs } from "@/components/leaderboard/LeaderboardTabs";
 import { ZoneTimeMatrix } from "@/components/leaderboard/ZoneTimeMatrix";
 import { GhostComparisonCard } from "@/components/leaderboard/GhostComparisonCard";
 import { Card } from "@/components/ui/Card";
+import { ScreenLoading } from "@/components/ui/ScreenLoading";
 import { useCurrentUserId } from "@/lib/hooks/useCurrentUser";
 import { useZones } from "@/lib/hooks/useZones";
 import { useLeaderboard, useZoneTimeStats } from "@/lib/hooks/useLeaderboard";
 import { useProfile } from "@/lib/hooks/useProfile";
 import { getGhostComparison } from "@/lib/utils/ghost";
 
-export function LeaderboardScreen({
-  userId,
-  initialLeaderboards,
-  initialZones,
-  initialZoneTimeStats,
-  initialProfile,
-}: {
-  userId: string | null;
-  initialLeaderboards: Record<LeaderboardPeriod, LeaderboardEntry[]>;
-  initialZones: Zone[];
-  initialZoneTimeStats: ZoneTimeStat[];
-  initialProfile: Profile | null;
-}) {
-  const currentUserId = useCurrentUserId(userId);
-  const { data: week = [] } = useLeaderboard("week", initialLeaderboards.week);
-  const { data: month = [] } = useLeaderboard("month", initialLeaderboards.month);
-  const { data: all = [] } = useLeaderboard("all", initialLeaderboards.all);
-  const { data: zones = [] } = useZones(initialZones);
-  const { data: zoneTimeStats = [] } = useZoneTimeStats(initialZoneTimeStats);
-  const { data: profile } = useProfile(currentUserId, initialProfile);
+export function LeaderboardScreen() {
+  const currentUserId = useCurrentUserId();
+  const { data: week } = useLeaderboard("week");
+  const { data: month } = useLeaderboard("month");
+  const { data: all } = useLeaderboard("all");
+  const { data: zones } = useZones();
+  const { data: zoneTimeStats } = useZoneTimeStats();
+  const { data: profile } = useProfile(currentUserId);
+
+  if (!week || !month || !all || !zones || !zoneTimeStats) {
+    return <ScreenLoading />;
+  }
 
   const ghostComparison = getGhostComparison(month, currentUserId);
 

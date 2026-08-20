@@ -1,9 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, type TouchEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import type { Profile } from "@/lib/types/database";
 import { useProfile } from "@/lib/hooks/useProfile";
 import { signOut } from "@/lib/services/auth";
@@ -16,6 +16,14 @@ const TABS = [
   { href: "/profile", label: "פרופיל", icon: "👤" },
 ];
 
+const SWIPE_THRESHOLD_PX = 60;
+
+const slideVariants = {
+  enter: (dir: number) => ({ x: dir >= 0 ? 32 : -32, opacity: 0 }),
+  center: { x: 0, opacity: 1 },
+  exit: (dir: number) => ({ x: dir >= 0 ? -32 : 32, opacity: 0 }),
+};
+
 export function AppShell({ profile: initialProfile, children }: { profile: Profile; children: ReactNode }) {
   // Shares the same SWR cache entry every screen reads/writes (optimistic
   // score bumps from Report, revalidation elsewhere), so the header stays
@@ -23,6 +31,42 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
   const { data: activeProfile = initialProfile } = useProfile(initialProfile.id, initialProfile);
   const pathname = usePathname();
   const router = useRouter();
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+
+  const currentIndex = TABS.findIndex((t) => pathname?.startsWith(t.href));
+
+  // Direction is derived from tab order on every pathname change (whether
+  // it came from a swipe or a tap on the nav bar), so both trigger the
+  // same slide direction consistently.
+  const prevIndexRef = useRef(currentIndex);
+  const [direction, setDirection] = useState(0);
+  useEffect(() => {
+    if (currentIndex !== -1 && prevIndexRef.current !== -1 && prevIndexRef.current !== currentIndex) {
+      setDirection(currentIndex > prevIndexRef.current ? 1 : -1);
+    }
+    prevIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  function handleTouchStart(e: TouchEvent) {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  }
+
+  function handleTouchEnd(e: TouchEvent) {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start || currentIndex === -1) return;
+
+    const end = e.changedTouches[0];
+    const deltaX = end.clientX - start.x;
+    const deltaY = end.clientY - start.y;
+
+    if (Math.abs(deltaX) < SWIPE_THRESHOLD_PX || Math.abs(deltaY) > Math.abs(deltaX)) return;
+
+    // Swipe left -> next tab, swipe right -> previous tab.
+    const target = deltaX < 0 ? TABS[currentIndex + 1] : TABS[currentIndex - 1];
+    if (target) router.push(target.href);
+  }
 
   async function handleSignOut() {
     await signOut();
@@ -60,7 +104,26 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
         </button>
       </header>
 
-      <main className="flex flex-1 flex-col px-5">{children}</main>
+      <main
+        className="flex flex-1 flex-col overflow-x-hidden px-5"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <AnimatePresence mode="wait" initial={false} custom={direction}>
+          <motion.div
+            key={pathname}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="flex flex-1 flex-col"
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </main>
 
       <nav
         className="fixed inset-x-0 bottom-0 z-10 flex justify-center"

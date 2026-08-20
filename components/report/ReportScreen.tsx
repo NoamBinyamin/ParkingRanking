@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ReportWithZone, Zone, ZoneTimeStat } from "@/lib/types/database";
+import type { ReportWithZone, Zone } from "@/lib/types/database";
 import type { AchievementDefinition } from "@/lib/achievements";
 import { ZoneGrid } from "@/components/report/ZoneGrid";
 import { ReportConfirmation } from "@/components/report/ReportConfirmation";
@@ -11,6 +11,7 @@ import { PoopRain } from "@/components/report/PoopRain";
 import { RecentReportDialog } from "@/components/report/RecentReportDialog";
 import { WelcomeSplash } from "@/components/onboarding/WelcomeSplash";
 import { Button } from "@/components/ui/Button";
+import { ScreenLoading } from "@/components/ui/ScreenLoading";
 import { useCurrentUserId } from "@/lib/hooks/useCurrentUser";
 import { useZones } from "@/lib/hooks/useZones";
 import { useZoneTimeStats } from "@/lib/hooks/useLeaderboard";
@@ -21,21 +22,15 @@ import { submitParkingReport, replaceLastReport } from "@/app/(app)/report/actio
 const GAG_ZONE_SLUG = "sachla";
 const ONBOARDING_STORAGE_KEY = "parkpoints_onboarding_seen";
 
-export function ReportScreen({
-  userId,
-  initialZones,
-  initialZoneTimeStats,
-}: {
-  userId: string;
-  initialZones: Zone[];
-  initialZoneTimeStats: ZoneTimeStat[];
-}) {
-  // fallbackData means first paint is instant (server-fetched), then SWR
-  // takes over: cached instantly on return visits, revalidated quietly in
-  // the background so it never sits stale for long either.
-  const currentUserId = useCurrentUserId(userId);
-  const { data: zones = [] } = useZones(initialZones);
-  const { data: zoneTimeStats = [] } = useZoneTimeStats(initialZoneTimeStats);
+export function ReportScreen() {
+  // No server-fetched props at all: the page route does zero data work,
+  // so switching to this screen never waits on a server round-trip. The
+  // very first time this mounts in a session there's a brief loading
+  // state below; every navigation after that reads straight from SWR's
+  // cache (instant), which keeps quietly revalidating in the background.
+  const currentUserId = useCurrentUserId();
+  const { data: zones } = useZones();
+  const { data: zoneTimeStats } = useZoneTimeStats();
   const addPoints = useOptimisticScore(currentUserId);
   const revalidateAfterReport = useRevalidateAfterReport();
 
@@ -56,6 +51,10 @@ export function ReportScreen({
   function closeOnboarding() {
     setShowOnboarding(false);
     localStorage.setItem(ONBOARDING_STORAGE_KEY, "1");
+  }
+
+  if (!zones || !zoneTimeStats) {
+    return <ScreenLoading />;
   }
 
   const selectedZone = zones.find((z) => z.id === selectedZoneId) ?? null;
