@@ -86,6 +86,17 @@ html {
      visually exceed the viewport by a couple of px at its peak, which
      would otherwise register as horizontal scroll on mobile. */
   overflow-x: hidden;
+  /* AppShell's own h-dvh + overflow-hidden root is meant to be the only
+     scroll boundary (its <main> scrolls internally, header/nav stay put).
+     This is a defensive backstop against the page itself ever scrolling
+     instead -- if it did, the header would drag away with it and the
+     fixed bottom nav would end up overlapping whatever scrolled into its
+     space. Not paired with a fixed height (that would fight body's own
+     safe-area-inset-top padding below) -- AppShell's div is already
+     exactly one viewport tall and clips its own overflow, so body should
+     never actually need to scroll; this only clips it if something
+     unexpectedly does.  */
+  overflow-y: hidden;
 }
 
 body {
@@ -95,6 +106,7 @@ body {
   min-height: 100vh;
   overscroll-behavior-y: none;
   overflow-x: hidden;
+  overflow-y: hidden;
   /* Keeps content clear of the notch/status bar when running fullscreen
      from the home screen (viewportFit: "cover" lets the page draw under
      it in the first place). */

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatPoints } from "@/lib/utils/points";
+import { PointsBadge } from "@/components/ui/PointsBadge";
 import { hexWithAlpha } from "@/lib/utils/color";
 import type { Zone } from "@/lib/types/database";
 
@@ -17,7 +17,7 @@ export function ZoneChips({
   displayPoints?: number;
 }) {
   return (
-    <div className="grid grid-cols-3 gap-0.5">
+    <div className="grid grid-cols-3 gap-1">
       {zones.map((zone) => {
         const isSelected = zone.id === selectedZoneId;
         const points = displayPoints ?? zone.point_value;
@@ -28,16 +28,18 @@ export function ZoneChips({
             onClick={() => onSelect(zone.id)}
             style={
               isSelected
-                ? { borderColor: zone.color, backgroundColor: hexWithAlpha(zone.color, 0.14) }
+                ? { borderColor: zone.color, backgroundColor: hexWithAlpha(zone.color, 0.12) }
                 : undefined
             }
-            className={`flex min-w-0 items-center justify-center gap-1 rounded-full border px-1.5 py-1 text-[11px] font-display font-semibold transition-colors ${
-              isSelected ? "text-ink" : "border-ink/10 text-ink/50"
+            className={`flex flex-col items-center gap-0.5 rounded-xl border p-1.5 text-center transition-colors ${
+              isSelected ? "text-ink" : "border-ink/10 bg-surface text-ink/70"
             }`}
           >
-            <span className="shrink-0 text-sm leading-none">{zone.icon}</span>
-            <span className="truncate">{zone.name}</span>
-            <span className="shrink-0 text-[9px] font-bold text-ink/40">{formatPoints(points)}</span>
+            <span className="text-xl leading-none">{zone.icon}</span>
+            <span className="w-full truncate font-display text-xs font-semibold leading-tight">
+              {zone.name}
+            </span>
+            <PointsBadge value={points} size="sm" />
           </button>
         );
       })}

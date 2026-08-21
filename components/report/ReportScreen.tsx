@@ -137,7 +137,7 @@ export function ReportScreen() {
         <RightNowCard zones={zones} stats={zoneTimeStats} />
       </div>
 
-      <div className="mb-0.5 aspect-[880/580] w-full">
+      <div className="mx-auto mb-0.5 aspect-[880/580] w-[48%]">
         <ZoneMap selectedZone={selectedZone} />
       </div>
 

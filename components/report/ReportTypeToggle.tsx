@@ -31,7 +31,7 @@ export function ReportTypeToggle({
       </div>
 
       {reportType === "saw" && (
-        <div className="mt-0.5 flex items-center justify-center gap-2 rounded-full border border-game-blue/30 bg-game-blue/10 px-2.5 py-0.5">
+        <div className="mt-0 flex items-center justify-center gap-2 rounded-full border border-game-blue/30 bg-game-blue/10 px-2.5 py-0.5">
           <span className="text-[11px] font-semibold text-ink/60">כמה מקומות ראיתם?</span>
           <button
             onClick={() => onChangeCount(Math.max(1, spotCount - 1))}
