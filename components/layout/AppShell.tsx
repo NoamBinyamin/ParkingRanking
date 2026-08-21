@@ -47,15 +47,21 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
 
   // Direction is derived from tab order on every pathname change (whether
   // it came from a swipe or a tap on the nav bar), so both trigger the
-  // same slide direction consistently.
+  // same slide direction consistently. This has to happen synchronously
+  // during render (comparing against a ref), not in a useEffect -- an
+  // effect fires a render after pathname has already changed, which is
+  // one tick too late for AnimatePresence's mount-time animation, so the
+  // entering screen would slide in using the *previous* navigation's
+  // direction instead of this one's.
   const prevIndexRef = useRef(currentIndex);
-  const [direction, setDirection] = useState(0);
-  useEffect(() => {
-    if (currentIndex !== -1 && prevIndexRef.current !== -1 && prevIndexRef.current !== currentIndex) {
-      setDirection(currentIndex > prevIndexRef.current ? 1 : -1);
+  const directionRef = useRef(0);
+  if (prevIndexRef.current !== currentIndex) {
+    if (currentIndex !== -1 && prevIndexRef.current !== -1) {
+      directionRef.current = currentIndex > prevIndexRef.current ? 1 : -1;
     }
     prevIndexRef.current = currentIndex;
-  }, [currentIndex]);
+  }
+  const direction = directionRef.current;
 
   // A screen scrolled down (e.g. Leaderboard/Profile) carrying that scroll
   // position into a swipe-triggered route change caused a layout jump

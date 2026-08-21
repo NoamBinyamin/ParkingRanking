@@ -27,7 +27,7 @@ export function GhostComparisonCard({ comparison }: { comparison: GhostCompariso
         <span className="text-3xl">👻</span>
         <div>
           <p className="font-display text-sm font-bold text-ink">
-            ל-{comparison.leaderIcon} {comparison.leaderName} יש {comparison.leaderPoints} נק&apos; החודש
+            {comparison.leaderIcon} ל{comparison.leaderName} יש {comparison.leaderPoints} נק&apos; החודש
           </p>
           <p className="text-xs text-ink/50">דווחו על חניה כדי להצטרף למרוץ</p>
         </div>
