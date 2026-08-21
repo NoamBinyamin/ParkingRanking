@@ -15,13 +15,13 @@ export function ReportTypeToggle({
   onChangeCount: (count: number) => void;
 }) {
   return (
-    <div className="mb-2">
+    <div className="mb-1">
       <div className="flex rounded-2xl bg-ink/5 p-1">
         {(Object.keys(REPORT_TYPE_LABELS) as ReportType[]).map((type) => (
           <button
             key={type}
             onClick={() => onChangeType(type)}
-            className={`flex-1 rounded-xl py-2 text-sm font-display font-semibold transition-colors ${
+            className={`flex-1 rounded-xl py-1.5 text-sm font-display font-semibold transition-colors ${
               reportType === type ? "bg-surface text-game-purple-dark shadow" : "text-ink/50"
             }`}
           >
@@ -31,20 +31,20 @@ export function ReportTypeToggle({
       </div>
 
       {reportType === "saw" && (
-        <div className="mt-2 flex items-center justify-center gap-2.5 rounded-full border border-game-blue/30 bg-game-blue/10 px-3 py-1.5">
-          <span className="text-xs font-semibold text-ink/60">כמה מקומות ראיתם?</span>
+        <div className="mt-0.5 flex items-center justify-center gap-2 rounded-full border border-game-blue/30 bg-game-blue/10 px-2.5 py-0.5">
+          <span className="text-[11px] font-semibold text-ink/60">כמה מקומות ראיתם?</span>
           <button
             onClick={() => onChangeCount(Math.max(1, spotCount - 1))}
             aria-label="פחות מקומות"
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-ink/15 bg-surface font-display text-sm font-bold text-ink"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-ink/15 bg-surface font-display text-xs font-bold text-ink"
           >
             −
           </button>
-          <span className="w-4 text-center font-display text-sm font-bold text-ink">{spotCount}</span>
+          <span className="w-4 text-center font-display text-xs font-bold text-ink">{spotCount}</span>
           <button
             onClick={() => onChangeCount(Math.min(MAX_SPOT_COUNT, spotCount + 1))}
             aria-label="יותר מקומות"
-            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-ink/15 bg-surface font-display text-sm font-bold text-ink"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-ink/15 bg-surface font-display text-xs font-bold text-ink"
           >
             +
           </button>

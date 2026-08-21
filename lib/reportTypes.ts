@@ -10,3 +10,15 @@ export const REPORT_TYPE_LABELS: Record<ReportType, { label: string; icon: strin
   parked: { label: "חניתי כאן", icon: "🚗" },
   saw: { label: "ראיתי מקום פנוי", icon: "👀" },
 };
+
+// Zones are named by street + letter (e.g. "sirkin-a", "katznelson-b") --
+// both letter's zones sit on the same reference map, so they share one
+// highlight image regardless of which street they're actually on.
+// "joker" gets its own image; anything else (e.g. the joke "sachla" zone,
+// which has no street of its own on the map) has no highlight at all.
+export function getZoneMapImage(slug: string): string | null {
+  if (slug === "joker") return "/maps/joker.webp";
+  if (slug.endsWith("-a")) return "/maps/a.webp";
+  if (slug.endsWith("-b")) return "/maps/b.webp";
+  return null;
+}

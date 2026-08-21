@@ -541,16 +541,21 @@ grant execute on function public.replace_last_report to authenticated;
 -- Seed zones
 -- ---------------------------------------------------------------------------
 
+-- Colors match the reference street-map artwork's own highlight scheme:
+-- joker gets its own pink/coral, both "a" zones share the map's orange
+-- highlight and both "b" zones share its green highlight (they're
+-- literally the same two streets on the map, split by letter) -- sachla
+-- has no street of its own on the map, so it keeps its own distinct red.
 insert into public.zones (name, slug, point_value, color, icon, description) values
-  ('ג''וקר', 'joker', 50, '#ff5da2', '🃏',
+  ('ג''וקר', 'joker', 50, '#f07878', '🃏',
     'הקלף המנצח! מצאת את החניה המושלמת שכולם חולמים עליה. שיחקת אותה בענק! 🃏👑'),
-  ('כצנלסון א''', 'katznelson-a', 20, '#7c5cff', '🍕',
+  ('כצנלסון א''', 'katznelson-a', 20, '#f0b090', '🍕',
     'חניה של אלופים. 🏙️🍕'),
-  ('סירקין א''', 'sirkin-a', 20, '#33d17a', '🌳',
+  ('סירקין א''', 'sirkin-a', 20, '#f0b090', '🌳',
     'חניה מעולה בחלק המבוקש סירקין. אפשר לכבות מנוע ברוגע. 🌳🚙'),
-  ('כצנלסון ב''', 'katznelson-b', 10, '#3ec6ff', '🚶',
+  ('כצנלסון ב''', 'katznelson-b', 10, '#80c8a8', '🚶',
     'קצת יותר הליכה על כצנלסון, אבל היי - חניה זו חניה! 🚶‍♂️🛍️'),
-  ('סירקין ב''', 'sirkin-b', 10, '#ffc93c', '🌃',
+  ('סירקין ב''', 'sirkin-b', 10, '#80c8a8', '🌃',
     'בהמשך הרחוב של סירקין. לא מושלם, אבל סוגר פינה מעולה ללילה. 🌙🚗'),
   ('סחלה', 'sachla', -20, '#ff5a5f', '💩',
     'על הפנים... חניה נוראית, רחוקה, צפופה או סתם מייאשת. עדיף היה לבוא באופניים. 💩👎');

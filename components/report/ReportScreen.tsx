@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import type { ReportType, ReportWithZone, Zone } from "@/lib/types/database";
 import type { AchievementDefinition } from "@/lib/achievements";
-import { ZoneGrid } from "@/components/report/ZoneGrid";
+import { ZoneMap } from "@/components/report/ZoneMap";
+import { ZoneChips } from "@/components/report/ZoneChips";
 import { ReportConfirmation } from "@/components/report/ReportConfirmation";
 import { ReportTypeToggle } from "@/components/report/ReportTypeToggle";
 import { CarDrivingIndicator } from "@/components/report/CarDrivingIndicator";
@@ -113,8 +114,8 @@ export function ReportScreen() {
   }
 
   return (
-    <div className="flex flex-1 flex-col pb-2">
-      <div className="relative mb-1 text-center">
+    <div className="flex flex-1 flex-col pb-1">
+      <div className="relative mb-0.5 text-center">
         <button
           onClick={() => setShowOnboarding(true)}
           aria-label="איך משחקים"
@@ -123,7 +124,6 @@ export function ReportScreen() {
           ℹ️
         </button>
         <h1 className="font-display text-xl font-bold text-ink">איפה חנית?</h1>
-        <p className="text-xs text-ink/50">בחרו אזור ונעלו את הניקוד</p>
       </div>
 
       <ReportTypeToggle
@@ -133,18 +133,22 @@ export function ReportScreen() {
         onChangeCount={setSpotCount}
       />
 
-      <div className="mb-2.5">
+      <div className="mb-0.5">
         <RightNowCard zones={zones} stats={zoneTimeStats} />
       </div>
 
-      <ZoneGrid
+      <div className="mb-0.5 aspect-[880/580] w-full">
+        <ZoneMap selectedZone={selectedZone} />
+      </div>
+
+      <ZoneChips
         zones={zones}
         selectedZoneId={selectedZoneId}
         onSelect={setSelectedZoneId}
         displayPoints={reportType === "saw" ? SAW_BONUS_POINTS : undefined}
       />
 
-      <div className="mt-auto pt-3">
+      <div className="mt-auto pt-1.5">
         <Button
           variant="primary"
           className="w-full py-4 text-lg shadow-[0_8px_0_0_var(--color-game-purple-dark)]"

@@ -131,7 +131,7 @@ export function AppShell({ profile: initialProfile, children }: { profile: Profi
     <div className="flex h-dvh flex-col overflow-hidden">
       <LiveReportToast toast={liveToast} />
 
-      <header className="flex shrink-0 items-center justify-between px-5 py-3">
+      <header className="flex shrink-0 items-center justify-between px-5 py-1">
         <Link href="/profile" className="flex items-center gap-2">
           <span className="text-2xl">{activeProfile.avatar_emoji}</span>
           <div className="text-start">
