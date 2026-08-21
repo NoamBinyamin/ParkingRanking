@@ -15,7 +15,7 @@ export function ReportTypeToggle({
   onChangeCount: (count: number) => void;
 }) {
   return (
-    <div className="mb-1">
+    <div className="mb-1.5">
       <div className="flex rounded-2xl bg-ink/5 p-1">
         {(Object.keys(REPORT_TYPE_LABELS) as ReportType[]).map((type) => (
           <button
